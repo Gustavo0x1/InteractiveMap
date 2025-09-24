@@ -7,6 +7,7 @@ const legendStyle = {
   bottom: '30px',
   left: '10px',
   zIndex: 1000,
+  color:'black',
   backgroundColor: 'rgba(255, 255, 255, 0.8)',
   padding: '10px',
   borderRadius: '5px',
@@ -39,7 +40,7 @@ function Legend({ colorScale, valueRange }) {
 
   return (
     <div style={legendStyle}>
-      <strong>Valor</strong>
+      <strong>Valor (Kwh/m²/dia)</strong>
       <div style={{ ...gradientStyle, background: gradient }}></div>
       <div style={labelsStyle}>
         <span>{min.toFixed(2)}</span>

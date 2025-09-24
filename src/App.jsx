@@ -39,6 +39,7 @@ function App() {
           visible: true, type: 'choropleth',
         };
 
+
         const brasilResponse = await fetch('/limite_brasil.geojson');
         const brasilData = await brasilResponse.json();
         const brasilLayer = {

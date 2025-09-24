@@ -7,7 +7,7 @@ function Sidebar({ layers, attributes, selectedAttribute, onToggleLayer, onAttri
 
   return (
     <div className="sidebar">
-      <h2>Controles</h2>
+      <h2 style={{color:'black'}}>Controles</h2>
       
       <h4>Camadas</h4>
       {layers.map((layer) => (

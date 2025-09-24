@@ -1,0 +1,20 @@
+[
+  {
+    "nome": "Parque Municipal da Cidade",
+    "filtros": ["parque", "lazer", "natureza"],
+    "coordenadas": [-16.715, -43.875],
+    "tipo": "Ponto Turístico"
+  },
+  {
+    "nome": "Restaurante Sabor da Terra",
+    "filtros": ["restaurante", "comida típica", "almoço"],
+    "coordenadas": [-16.725, -43.860],
+    "tipo": "Alimentação"
+  },
+  {
+    "nome": "Hospital Central",
+    "filtros": ["saúde", "hospital", "emergência"],
+    "coordenadas": [-16.730, -43.880],
+    "tipo": "Serviço Essencial"
+  }
+]

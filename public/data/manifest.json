@@ -1,0 +1,15 @@
+{
+  "layers": [
+    {
+      "id": "pecuaria",
+      "name": "Dados pecuaria",
+      "path": "/data/dados_pecuaria.csv"
+    },
+    {
+      "id": "cultivos",
+      "name": "Dados cultivos",
+      "path": "/data/dados_cultivos.csv"
+    }
+
+  ]
+}

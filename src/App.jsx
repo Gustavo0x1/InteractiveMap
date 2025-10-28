@@ -6,11 +6,8 @@ import 'leaflet/dist/leaflet.css';
 import Sidebar from './components/Sidebar';
 import MapComponent from './components/MapComponent';
 import './components/styles/App.css';
+import SelectionInfo from './components/SelectionInfo';
 
-/**
- * Cria uma camada GeoJSON unindo dados de um arquivo CSV com as geometrias dos municípios.
- * Também extrai os atributos numéricos do CSV para uso no seletor.
- */
 const createLayerFromCSV = async (layerInfo, municipiosGeoJSON) => {
   try {
     console.log(`[${layerInfo.name}] Iniciando carregamento...`);
@@ -92,21 +89,28 @@ function App() {
   const [selectedAttribute, setSelectedAttribute] = useState('');
   const [valueRange, setValueRange] = useState([0, 0]);
   const [selectedFeatures, setSelectedFeatures] = useState({});
-
+const [infoPaneVisible, setInfoPaneVisible] = useState(false);
   const ATTRIBUTE_MAP = {
     JAN: 'Janeiro', FEB: 'Fevereiro', MAR: 'Março', APR: 'Abril', MAY: 'Maio', JUN: 'Junho',
     JUL: 'Julho', AUG: 'Agosto', SEP: 'Setembro', OCT: 'Outubro', NOV: 'Novembro', DEC: 'Dezembro', ANNUAL: 'Anual',
   };
 
-  const handleAreaSelect = useCallback((drawnPolygon) => {
-    // Lógica de seleção de área (mantida como está)
+const handleAreaSelect = useCallback((drawnPolygon) => {
     if (!drawnPolygon?.geometry || !drawnPolygon.geometry.coordinates?.length) {
       console.error("Polígono desenhado é inválido:", drawnPolygon);
       return;
     }
+
+    // 1. Criamos um polígono "normalizado" a partir das coordenadas desenhadas.
+    //    Isso resolve inconsistências que podem confundir a biblioteca de interseção.
+    const selectionPolygon = turf.polygon(drawnPolygon.geometry.coordinates);
+
+    console.log("Analisando a área selecionada...");
+
     const visibleLayers = layers.filter(l => l.visible);
     const selectedByLayer = {};
-    visibleLayers.forEach(layer => {
+
+layers.forEach(layer => {
       if (!layer?.data?.features) return;
       const featuresInside = [];
       layer.data.features.forEach(feature => {
@@ -122,6 +126,8 @@ function App() {
         selectedByLayer[layer.id] = featuresInside;
       }
     });
+
+    console.log("Feições selecionadas por camada:", selectedByLayer);
     setSelectedFeatures(selectedByLayer);
   }, [layers]);
 
@@ -232,28 +238,47 @@ function App() {
       })
     );
   };
+const handlePolygonClick = () => {
+  console.log("clkc")
+    if (Object.keys(selectedFeatures).length > 0) {
+      setInfoPaneVisible(true);
+    }
+  };
 
+  const closeInfoPane = () => {
+    setInfoPaneVisible(false);
+  };
   const handleAttributeChange = (event) => {
     setSelectedAttribute(event.target.value);
   };
-
-  return (
+return (
     <div className="app-container">
       <Sidebar
         layers={layers}
-        attributes={attributes} // Envia apenas os atributos da camada ativa
+        attributes={attributes}
         selectedAttribute={selectedAttribute}
         onToggleLayer={toggleLayerVisibility}
         onAttributeChange={handleAttributeChange}
       />
+      
+      {/* 3. Renderiza o painel aqui, se estiver visível */}
+      {infoPaneVisible && (
+        <SelectionInfo
+          selectedFeatures={selectedFeatures}
+          layers={layers}
+          onClose={closeInfoPane}
+        />
+      )}
+
       <MapComponent
         layers={layers}
         selectedAttribute={selectedAttribute}
         valueRange={valueRange}
         onAreaSelect={handleAreaSelect}
+        selectedFeatures={selectedFeatures}
+        onPolygonClick={handlePolygonClick} // Passa a função para o MapComponent
       />
     </div>
-
   );
 }
 

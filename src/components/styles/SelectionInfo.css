@@ -1,0 +1,73 @@
+/* Transforma o painel de informações em uma barra lateral fixa */
+.selection-info {
+  width: 350px; /* Largura fixa */
+  flex-shrink: 0; /* Impede que a barra encolha */
+  background-color: #ffffff;
+  border-left: 1px solid #ddd; /* Linha para separar do mapa */
+  display: flex;
+  flex-direction: column;
+  height: 100vh; /* Ocupa a altura inteira */
+  font-family: sans-serif;
+  box-shadow: -2px 0 5px rgba(0,0,0,0.05);
+}
+
+.selection-info-header {
+  padding: 12px 15px;
+  background-color: #f1f1f1;
+  border-bottom: 1px solid #ddd;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.selection-info-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+.selection-info-content {
+  padding: 15px;
+  overflow-y: auto; /* Adiciona scroll se o conteúdo for muito grande */
+  flex-grow: 1;
+}
+
+.layer-info h4 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 8px;
+  font-size: 15px;
+  color: #333;
+}
+
+.layer-info ul {
+  list-style-type: none;
+  padding-left: 0;
+  margin: 0;
+}
+
+.layer-info li {
+  margin-bottom: 15px;
+}
+
+.feature-properties {
+  padding-left: 10px;
+  font-size: 13px;
+  margin-top: 5px;
+}
+
+.info-key {
+  font-weight: bold;
+  margin-right: 5px;
+}

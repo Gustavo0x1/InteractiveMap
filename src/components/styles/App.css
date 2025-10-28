@@ -1,5 +1,6 @@
 /* src/App.css */
 body {
+  color:black;
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
@@ -14,13 +15,15 @@ body {
 
 .sidebar {
   width: 300px;
-  background-color: #f8f9fa;
-  padding: 20px;
+  background-color: #f7f7f7;
+  padding: 10px;
   box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
   overflow-y: auto;
-  z-index: 1001; /* Garante que fique sobre o mapa se houver sobreposição */
+  flex-shrink: 0; /* Adicionado para garantir que não encolha */
 }
-
 .sidebar h2 {
   margin-top: 0;
   border-bottom: 1px solid #ddd;
@@ -53,5 +56,6 @@ body {
 
 .map-wrapper {
   flex-grow: 1; /* Faz o mapa ocupar o resto do espaço */
-  position: relative; /* Importante para o posicionamento dos controles do Leaflet */
+  position: relative;
+  height: 100%; /* Importante para o posicionamento dos controles do Leaflet */
 }

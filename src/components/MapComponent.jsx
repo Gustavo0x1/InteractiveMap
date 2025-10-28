@@ -4,6 +4,7 @@ import { EditControl } from 'react-leaflet-draw';
 import { scaleSequential } from 'd3-scale';
 import { interpolateYlOrRd } from 'd3-scale-chromatic';
 import Legend from './Legend';
+import SelectionInfo from './SelectionInfo';
 import 'leaflet-draw/dist/leaflet.draw.css';
 
 const createTooltipContent = (properties) => {
@@ -56,7 +57,7 @@ const createTooltipContent = (properties) => {
   content += '</div>';
   return content;
 };
-function MapComponent({ layers, selectedAttribute, valueRange, onAreaSelect }) {
+function MapComponent({ layers, selectedAttribute, valueRange, onAreaSelect,selectedFeatures,onPolygonClick }) {
   const drawnItemsRef = useRef();
 
   const colorScale = useMemo(() => {
@@ -78,19 +79,22 @@ const styleChoropleth = (feature, colorScale, selectedAttribute) => {
 };
   const choroplethIsVisible = layers.some(l => l.type === 'choropleth' && l.visible);
 
-  const handleCreate = (e) => {
-    const drawnPolygon = e.layer.toGeoJSON();
-    console.log("Drawn polygon GeoJSON:", drawnPolygon); // Debug: Verifique a estrutura
-
-    // Envia o polígono para análise no componente App
-    onAreaSelect(drawnPolygon);
-
-    // Opcional: Limpa após 500ms para evitar múltiplos polígonos (ajuste ou remova)
+const handleCreate = (e) => {
+    const drawnPolygonLayer = e.layer;
     if (drawnItemsRef.current) {
-      setTimeout(() => {
-        drawnItemsRef.current.clearLayers();
-      }, 500);
+      drawnItemsRef.current.clearLayers();
     }
+    drawnItemsRef.current.addLayer(drawnPolygonLayer);
+    onAreaSelect(drawnPolygonLayer.toGeoJSON());
+    
+    // 3. Ao clicar, apenas chama a função recebida por prop
+    drawnPolygonLayer.on('click', (event) => {
+      L.DomEvent.stopPropagation(event);
+      onPolygonClick(); // Simplesmente notifica o componente pai
+    });
+  };
+  const closeInfoPane = () => {
+    setInfoPane({ ...infoPane, visible: false });
   };
 const onEachFeature = (feature, layerInstance) => {
   if (feature.properties) {
@@ -101,13 +105,12 @@ const onEachFeature = (feature, layerInstance) => {
     });
   }
 };
-
-  return (
+return (
     <div className="map-wrapper">
       <MapContainer center={[-18.91, -44.55]} zoom={6} style={{ height: '100%', width: '100%' }} preferCanvas={true}>
-        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution='&copy; OpenStreetMap' />
+        {/* ... (TileLayer, FeatureGroup e GeoJSON layers continuam os mesmos) ... */}
+         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution='&copy; OpenStreetMap' />
 
-        {/* Grupo para desenhos do usuário */}
         <FeatureGroup ref={drawnItemsRef}>
           <EditControl
             position="topright"
@@ -120,11 +123,10 @@ const onEachFeature = (feature, layerInstance) => {
               polyline: false,
               circlemarker: false,
             }}
-            edit={{ remove: false }} // Desativa exclusão manual para controle via código
+            edit={{ remove: true }}
           />
         </FeatureGroup>
 
-        {/* Renderiza camadas visíveis */}
         {layers.filter(layer => layer.visible).map(layer => (
           <GeoJSON
             key={`${layer.id}-${selectedAttribute}`}
@@ -136,11 +138,12 @@ const onEachFeature = (feature, layerInstance) => {
             }
             onEachFeature={onEachFeature}
           />
-
         ))}
 
         {choroplethIsVisible && <Legend colorScale={colorScale} valueRange={valueRange} />}
       </MapContainer>
+      
+      {/* 4. O painel de informações foi removido daqui */}
     </div>
   );
 }

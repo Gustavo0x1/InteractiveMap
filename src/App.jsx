@@ -1,18 +1,15 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import * as turf from '@turf/turf';
 import shp from 'shpjs';
-import Papa from 'papaparse'; // NECESSÁRIO: Importa a biblioteca para ler CSV
+import Papa from 'papaparse';
 import 'leaflet/dist/leaflet.css';
 import Sidebar from './components/Sidebar';
 import MapComponent from './components/MapComponent';
 import './components/styles/App.css';
 
-// --- FUNÇÃO GENÉRICA PARA CRIAR CAMADAS ---
 /**
  * Cria uma camada GeoJSON unindo dados de um arquivo CSV com as geometrias dos municípios.
- * @param {object} layerInfo - Objeto com informações da camada (id, name, path).
- * @param {object} municipiosGeoJSON - O GeoJSON base com as geometrias dos municípios.
- * @returns {Promise<object|null>} Uma promessa que resolve para o objeto da nova camada.
+ * Também extrai os atributos numéricos do CSV para uso no seletor.
  */
 const createLayerFromCSV = async (layerInfo, municipiosGeoJSON) => {
   try {
@@ -22,55 +19,64 @@ const createLayerFromCSV = async (layerInfo, municipiosGeoJSON) => {
       throw new Error(`Falha ao buscar ${layerInfo.path} - Status ${response.status}`);
     }
     const csvText = await response.text();
-    
     // Faz o parse do CSV
     const results = Papa.parse(csvText, { header: true, skipEmptyLines: true });
-
-    const customData = results.data;
-    const keyField = results.meta.fields[0]; // A primeira coluna é a chave (ex: 'municipios')
     
-    console.log(`[${layerInfo.name}] Chave de junção (CSV): ${keyField}`);
-    console.log(`[${layerInfo.name}] Total de linhas no CSV: ${customData.length}`);
+    const customData = results.data;
+    // A primeira coluna (results.meta.fields[0]) é a chave
+    const keyField = results.meta.fields[0]; 
 
     const dataMap = new Map();
     customData.forEach(row => {
-      // Normaliza o nome para a junção (remove acentos e converte para maiúsculas)
       const normalizedName = row[keyField]?.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
       if (normalizedName) {
         dataMap.set(normalizedName, row);
       }
     });
 
-    // Une os dados do CSV com as feições do GeoJSON
     const newFeatures = municipiosGeoJSON.features.map(feature => {
       const geojsonName = feature.properties.name;
       const normalizedGeojsonName = geojsonName.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
       const matchingData = dataMap.get(normalizedGeojsonName);
 
       if (matchingData) {
-        // Copia as propriedades base do GeoJSON
         const newProperties = { ...feature.properties };
-        
-        // Adiciona/Sobrescreve com todos os dados do CSV
         for (const key in matchingData) {
-          // Tenta converter para número, se falhar, mantém como texto
           const value = parseFloat(matchingData[key]);
+          // Se não for um número (NaN), mantém o valor original (ex: "-")
           newProperties[key] = isNaN(value) ? matchingData[key] : value;
         }
         return { ...feature, properties: newProperties };
       }
-      return null; // Remove municípios que não estão no CSV
-    }).filter(Boolean); // Filtra os nulos
+      return null;
+    }).filter(Boolean);
 
     console.log(`[${layerInfo.name}] Feições unidas: ${newFeatures.length}`);
 
     if (newFeatures.length > 0) {
+      // --- INÍCIO DA CORREÇÃO ---
+      // Lista de colunas base do GeoJSON para ignorar
+      const customExcluded = ['id', 'name', 'description'];
+      
+      // A lógica agora usa os CABEÇALHOS (results.meta.fields) em vez dos dados da primeira linha
+      const layerAttributes = results.meta.fields
+        .filter(key =>
+          // Filtra apenas a coluna de junção (ex: 'municipios') e as colunas base
+          !customExcluded.includes(key) &&
+          key.toLowerCase() !== keyField.toLowerCase()
+        )
+        .map(key => ({ value: key, label: key })); // Adiciona TODOS os outros
+      
+      console.log(`[${layerInfo.name}] Atributos encontrados (${layerAttributes.length}):`, layerAttributes.map(a => a.value));
+      // --- FIM DA CORREÇÃO ---
+
       return {
         id: layerInfo.id,
         name: layerInfo.name,
         data: { type: "FeatureCollection", features: newFeatures },
-        visible: false, // Inicia como invisível
+        visible: false,
         type: 'choropleth',
+        attributes: layerAttributes, // Adiciona a lista COMPLETA de atributos
       };
     }
     return null;
@@ -79,206 +85,137 @@ const createLayerFromCSV = async (layerInfo, municipiosGeoJSON) => {
     return null;
   }
 };
-// --- FIM DA FUNÇÃO GENÉRICA ---
 
 function App() {
   const [layers, setLayers] = useState([]);
-  const [attributes, setAttributes] = useState([]);
+  const [attributes, setAttributes] = useState([]); // Atributos da camada ATIVA para o Sidebar
   const [selectedAttribute, setSelectedAttribute] = useState('');
   const [valueRange, setValueRange] = useState([0, 0]);
   const [selectedFeatures, setSelectedFeatures] = useState({});
 
   const ATTRIBUTE_MAP = {
-    JAN: 'Janeiro',
-    FEB: 'Fevereiro',
-    MAR: 'Março',
-    APR: 'Abril',
-    MAY: 'Maio',
-    JUN: 'Junho',
-    JUL: 'Julho',
-    AUG: 'Agosto',
-    SEP: 'Setembro',
-    OCT: 'Outubro',
-    NOV: 'Novembro',
-    DEC: 'Dezembro',
-    ANNUAL: 'Anual',
+    JAN: 'Janeiro', FEB: 'Fevereiro', MAR: 'Março', APR: 'Abril', MAY: 'Maio', JUN: 'Junho',
+    JUL: 'Julho', AUG: 'Agosto', SEP: 'Setembro', OCT: 'Outubro', NOV: 'Novembro', DEC: 'Dezembro', ANNUAL: 'Anual',
   };
 
   const handleAreaSelect = useCallback((drawnPolygon) => {
+    // Lógica de seleção de área (mantida como está)
     if (!drawnPolygon?.geometry || !drawnPolygon.geometry.coordinates?.length) {
       console.error("Polígono desenhado é inválido:", drawnPolygon);
       return;
     }
-
-    console.log("Drawn polygon geometry type:", drawnPolygon.geometry.type);
-
     const visibleLayers = layers.filter(l => l.visible);
     const selectedByLayer = {};
-
     visibleLayers.forEach(layer => {
-      if (!layer?.data?.features) {
-        console.warn(`Camada ${layer.id} sem feições válidas.`);
-        return;
-      }
-
-      if (layer.data.features[0]?.geometry) {
-        console.log(`Geometria da camada ${layer.id}:`, layer.data.features[0].geometry.type);
-      }
-
+      if (!layer?.data?.features) return;
       const featuresInside = [];
       layer.data.features.forEach(feature => {
-        if (
-          feature?.geometry &&
-          ['Point', 'MultiPoint', 'Polygon', 'MultiPolygon'].includes(feature.geometry.type) &&
-          feature.geometry.coordinates?.length > 0
-        ) {
-          try {
-            if (turf.booleanIntersects(drawnPolygon, feature)) {
-              featuresInside.push(feature);
-            }
-          } catch (e) {
-            console.warn(`Ignorando feição inválida na camada ${layer.id}:`, feature, e.message);
+        try {
+          if (feature?.geometry && turf.booleanIntersects(drawnPolygon, feature)) {
+            featuresInside.push(feature);
           }
-        } else {
-          console.warn(`Geometria inválida ou não suportada na camada ${layer.id}:`, feature?.geometry);
+        } catch (e) {
+          // Ignora erros de topologia
         }
       });
-
       if (featuresInside.length > 0) {
         selectedByLayer[layer.id] = featuresInside;
       }
     });
-
-    console.log("Feições selecionadas por camada:", selectedByLayer);
     setSelectedFeatures(selectedByLayer);
   }, [layers]);
 
+  // Efeito para carregar todos os dados uma única vez
   useEffect(() => {
     const fetchData = async () => {
-      console.log("--- Iniciando carregamento de dados ---");
+      console.log("--- Iniciando carregamento de todos os dados ---");
       try {
-        // 1. Carrega a camada base original (mapa de calor)
+        // 1. Carrega a camada base (mapa de calor) e extrai seus atributos
         const shpResponse = await fetch('/Irrad.zip');
         const arrayBuffer = await shpResponse.arrayBuffer();
         const geojsonData = await shp(arrayBuffer);
         
+        const shpProps = geojsonData.features[0].properties;
+        const baseExcluded = ['ID', 'LAT', 'LON'];
+        const shpAttributes = Object.keys(shpProps)
+          .filter(key => typeof shpProps[key] === 'number' && !baseExcluded.includes(key.toUpperCase()))
+          .map(key => ({ value: key, label: ATTRIBUTE_MAP[key.toUpperCase()] || key }));
+
         const choroplethLayer = {
-          id: 'choropleth-mg',
-          name: 'Mapa de Calor MG',
-          data: geojsonData,
-          visible: true,
-          type: 'choropleth',
+          id: 'choropleth-mg', name: 'Mapa de Calor MG', data: geojsonData,
+          visible: true, type: 'choropleth', attributes: shpAttributes,
         };
 
         const brasilResponse = await fetch('/limite_brasil.geojson');
         const brasilData = await brasilResponse.json();
         const brasilLayer = {
-          id: 'brasil-limite',
-          name: 'Limite do Brasil',
-          data: brasilData,
-          visible: false,
-          type: 'geojson',
+          id: 'brasil-limite', name: 'Limite do Brasil', data: brasilData,
+          visible: false, type: 'geojson',
         };
 
         let initialLayers = [choroplethLayer, brasilLayer];
         
-        // --- LÓGICA DE CARREGAMENTO AUTOMÁTICO ---
-        // 2. Carrega o GeoJSON base dos municípios
+        // 2. Carrega as camadas personalizadas do manifesto
         const municipiosResponse = await fetch('/mg-municipios.geojson');
         const municipiosGeoJSON = await municipiosResponse.json();
-        console.log("GeoJSON de municípios carregado:", municipiosGeoJSON.features.length, 'feições');
-        
-        // 3. Carrega o manifesto de camadas
         const manifestResponse = await fetch('/data/manifest.json');
         const manifest = await manifestResponse.json();
-        console.log("Manifesto carregado:", manifest);
 
-        // 4. Cria todas as camadas personalizadas em paralelo
         const customLayerPromises = manifest.layers.map(layerInfo =>
           createLayerFromCSV(layerInfo, municipiosGeoJSON)
         );
-
         const loadedCustomLayers = (await Promise.all(customLayerPromises)).filter(Boolean);
-        console.log("Camadas personalizadas processadas:", loadedCustomLayers);
-        
         initialLayers = [...initialLayers, ...loadedCustomLayers];
-        // --- FIM DA LÓGICA ---
 
-        // Define as camadas no estado
         setLayers(initialLayers);
-        console.log("Total de camadas a serem definidas no estado:", initialLayers.length);
-
-        // --- INÍCIO DA LÓGICA DE ATRIBUTOS CORRIGIDA ---
-        // Cria uma lista mestra de todos os atributos numéricos de todas as camadas
-        const allNumericAttributes = new Map();
-        const baseExcluded = ['ID', 'LAT', 'LON'];
-        const customExcluded = ['id', 'name', 'description']; // Props do geojson base
-
-        initialLayers.forEach(layer => {
-          if (layer.type === 'choropleth' && layer.data?.features?.length > 0) {
-            const props = layer.data.features[0].properties;
-            // Tenta encontrar a chave de junção (ex: 'municipios') para excluí-la
-            const keyField = Object.keys(props).find(k => k.toLowerCase() === 'municipios'); 
-            
-            Object.keys(props).forEach(key => {
-              // Se for numérico e não for uma chave de exclusão...
-              if (typeof props[key] === 'number' && 
-                  !baseExcluded.includes(key.toUpperCase()) && 
-                  !customExcluded.includes(key) &&
-                  key !== keyField) {
-                
-                if (!allNumericAttributes.has(key)) {
-                  // Usa o ATTRIBUTE_MAP se existir, senão usa a própria chave
-                  const label = ATTRIBUTE_MAP[key.toUpperCase()] || key;
-                  allNumericAttributes.set(key, { value: key, label: label });
-                }
-              }
-            });
-          }
-        });
-
-        const availableAttributes = Array.from(allNumericAttributes.values());
-        setAttributes(availableAttributes);
-        console.log("Atributos numéricos encontrados:", availableAttributes);
-
-        // Define o atributo padrão
-        const defaultAttr = availableAttributes.find(attr => attr.value.toUpperCase() === 'ANNUAL');
-        setSelectedAttribute(defaultAttr ? defaultAttr.value : (availableAttributes[0]?.value || ''));
-        // --- FIM DA LÓGICA DE ATRIBUTOS ---
+        console.log("Todas as camadas foram carregadas no estado:", initialLayers);
 
       } catch (error) {
         console.error("Erro ao carregar as camadas:", error);
       }
     };
     fetchData();
-  }, []); // Executa apenas uma vez
+  }, []);
 
+  // Efeito para ATUALIZAR o seletor de atributos quando a camada visível muda
   useEffect(() => {
-    // --- LÓGICA DE VALUE RANGE CORRIGIDA ---
-    // Atualiza o range de cores baseado na camada visível e no atributo selecionado
-    
-    // Encontra a camada de calor que está visível
+    const activeLayer = layers.find(l => l.visible && l.type === 'choropleth');
+
+    if (activeLayer && activeLayer.attributes) {
+      console.log(`Camada ativa mudou para: "${activeLayer.name}". Atualizando atributos.`);
+      setAttributes(activeLayer.attributes);
+      
+      // Define o atributo selecionado como o primeiro da nova lista
+      setSelectedAttribute(activeLayer.attributes[0]?.value || '');
+    } else {
+      // Se nenhuma camada de calor estiver ativa, limpa o seletor
+      setAttributes([]);
+      setSelectedAttribute('');
+    }
+  }, [layers]); // Depende apenas de [layers]
+
+  // Efeito para ATUALIZAR a escala de cores
+  useEffect(() => {
     const visibleChoropleth = layers.find(l => l.visible && l.type === 'choropleth');
     
-    // Se nenhuma estiver visível, ou o atributo não existir nela, reseta o range
-    if (!visibleChoropleth || !visibleChoropleth.data.features[0]?.properties[selectedAttribute]) {
-      setValueRange([0, 0]); // Reseta o range
+    if (!visibleChoropleth || !selectedAttribute) {
+      setValueRange([0, 0]);
       return;
     }
-
-    // Se encontrou a camada e o atributo, calcula o min/max
+    // Calcula os valores *apenas* para o atributo selecionado
     const values = visibleChoropleth.data.features
       .map(feature => feature.properties[selectedAttribute])
-      .filter(value => typeof value === 'number');
+      .filter(value => typeof value === 'number'); // Filtra strings, "-", null, etc.
     
     if (values.length > 0) {
       setValueRange([Math.min(...values), Math.max(...values)]);
     } else {
+      // Se o atributo selecionado não tiver dados numéricos, reseta a escala
       setValueRange([0, 0]);
     }
-    // --- FIM DA LÓGICA DE VALUE RANGE ---
-  }, [layers, selectedAttribute]); // Roda sempre que as camadas ou o atributo mudam
+  }, [layers, selectedAttribute]); // Depende de [layers] e [selectedAttribute]
 
+  // Função para ligar/desligar camadas
   const toggleLayerVisibility = (layerId) => {
     setLayers(prevLayers =>
       prevLayers.map(l => {
@@ -286,11 +223,11 @@ function App() {
         if (l.id === layerId) {
           return { ...l, visible: !l.visible };
         }
-        // Se for OUTRA camada do tipo choropleth, desliga ela
-        if (l.type === 'choropleth' && l.id !== layerId) {
+        // Se for OUTRA camada de calor (choropleth), garante que ela seja desligada
+        if (l.type === 'choropleth') {
           return { ...l, visible: false };
         }
-        // Mantém as outras camadas (ex: limite do brasil) como estão
+        // Mantém as outras camadas (ex: limite do Brasil) como estão
         return l;
       })
     );
@@ -304,7 +241,7 @@ function App() {
     <div className="app-container">
       <Sidebar
         layers={layers}
-        attributes={attributes}
+        attributes={attributes} // Envia apenas os atributos da camada ativa
         selectedAttribute={selectedAttribute}
         onToggleLayer={toggleLayerVisibility}
         onAttributeChange={handleAttributeChange}
@@ -316,8 +253,8 @@ function App() {
         onAreaSelect={handleAreaSelect}
       />
     </div>
+
   );
 }
 
 export default App;
-

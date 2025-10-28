@@ -6,15 +6,56 @@ import { interpolateYlOrRd } from 'd3-scale-chromatic';
 import Legend from './Legend';
 import 'leaflet-draw/dist/leaflet.draw.css';
 
-const styleChoropleth = (feature, colorScale, selectedAttribute) => {
-  const value = feature.properties[selectedAttribute];
-  return {
-    fillColor: typeof value === 'number' ? colorScale(value) : '#ccc',
-    weight: 0,
-    fillOpacity: 0.8,
-  };
-};
+const createTooltipContent = (properties) => {
+  // Lista de propriedades base para ignorar (do GeoJSON ou do Shapefile original)
+  const ignoreProps = [
+    'id', 'name', 'description', // de mg-municipios.json
+    'ID', 'LAT', 'LON', 'JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 
+    'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC', 'ANNUAL', // de Irrad.zip
+    'municipios' // Ignora a coluna chave do CSV, já que usamos 'name'
+  ];
+  
+  // Usa a propriedade 'name' (do GeoJSON) como título padrão
+  const name = properties.name || 'Sem nome';
+  
+  // Classes CSS definidas em App.css
+  let content = `<strong class="tooltip-title">${name}</strong><hr class="tooltip-hr">`;
+  content += '<div class="tooltip-grid">';
 
+  let dataFound = false;
+  // Itera por todas as propriedades da feição
+  for (const key in properties) {
+    // Verifica se a propriedade não está na lista de ignorados
+    if (!ignoreProps.includes(key) && Object.prototype.hasOwnProperty.call(properties, key)) {
+      let value = properties[key];
+      
+      // Formata números para 2 casas decimais, se forem float
+      if (typeof value === 'number' && !Number.isInteger(value)) {
+        value = value.toFixed(2);
+      }
+      // Trata valores nulos ou vazios
+      if (value === '-' || value === null || value === undefined) {
+        value = 'N/A';
+      }
+      
+      // Adiciona a linha (chave: valor) ao grid
+      content += `<span class="tooltip-key">${key}:</span><span class="tooltip-value">${value}</span>`;
+      dataFound = true;
+    }
+  }
+
+  // Fallback caso nenhuma propriedade do CSV seja encontrada
+  if (!dataFound) {
+     if (properties.ANNUAL) { // Mostra o dado da camada de Irradiação
+        content += `<span class="tooltip-key">Irrad. Anual:</span><span class="tooltip-value">${properties.ANNUAL.toFixed(2)}</span>`;
+     } else {
+        return `<strong class="tooltip-title">${name}</strong><br>Sem dados adicionais.`;
+     }
+  }
+
+  content += '</div>';
+  return content;
+};
 function MapComponent({ layers, selectedAttribute, valueRange, onAreaSelect }) {
   const drawnItemsRef = useRef();
 
@@ -27,7 +68,14 @@ function MapComponent({ layers, selectedAttribute, valueRange, onAreaSelect }) {
     }
     return scaleSequential(valueRange, interpolateYlOrRd);
   }, [valueRange]);
-
+const styleChoropleth = (feature, colorScale, selectedAttribute) => {
+  const value = feature.properties[selectedAttribute];
+  return {
+    fillColor: typeof value === 'number' ? colorScale(value) : '#ccc',
+    weight: 0,
+    fillOpacity: 0.8,
+  };
+};
   const choroplethIsVisible = layers.some(l => l.type === 'choropleth' && l.visible);
 
   const handleCreate = (e) => {
@@ -44,6 +92,15 @@ function MapComponent({ layers, selectedAttribute, valueRange, onAreaSelect }) {
       }, 500);
     }
   };
+const onEachFeature = (feature, layerInstance) => {
+  if (feature.properties) {
+    const tooltipContent = createTooltipContent(feature.properties);
+    layerInstance.bindTooltip(tooltipContent, {
+      sticky: true, // Faz o tooltip seguir o mouse
+      className: 'custom-leaflet-tooltip' // Classe CSS para estilização
+    });
+  }
+};
 
   return (
     <div className="map-wrapper">
@@ -56,7 +113,7 @@ function MapComponent({ layers, selectedAttribute, valueRange, onAreaSelect }) {
             position="topright"
             onCreated={handleCreate}
             draw={{
-              rectangle: true,
+              rectangle: false,
               polygon: true,
               circle: false,
               marker: false,
@@ -77,7 +134,9 @@ function MapComponent({ layers, selectedAttribute, valueRange, onAreaSelect }) {
                 ? styleChoropleth(feature, colorScale, selectedAttribute)
                 : { color: '#0000ff', weight: 2, fillOpacity: 0.3 }
             }
+            onEachFeature={onEachFeature}
           />
+
         ))}
 
         {choroplethIsVisible && <Legend colorScale={colorScale} valueRange={valueRange} />}

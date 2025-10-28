@@ -1,46 +1,36 @@
-// src/Sidebar.js
 import React from 'react';
 
+// Remova onDataUpload dos parâmetros
 function Sidebar({ layers, attributes, selectedAttribute, onToggleLayer, onAttributeChange }) {
-  const choroplethLayer = layers.find(l => l.type === 'choropleth');
-  const choroplethIsVisible = choroplethLayer && choroplethLayer.visible;
-
   return (
     <div className="sidebar">
-      <h2 style={{color:'black'}}>Controles</h2>
-      
-      <h4>Camadas</h4>
-      {layers.map((layer) => (
-        <div key={layer.id} className="layer-item">
-          <input
-            type="checkbox"
-            id={`layer-${layer.id}`}
-            checked={layer.visible}
-            onChange={() => onToggleLayer(layer.id)}
-          />
-          <label htmlFor={`layer-${layer.id}`} style={{ marginLeft: '8px' }}>
-            {layer.name}
-          </label>
-        </div>
-      ))}
+      <h2>Controle de Camadas</h2>
+      <div className="layer-toggle">
+        {layers.map(layer => (
+          <div key={layer.id}>
+            <input
+              type="checkbox"
+              id={layer.id}
+              checked={layer.visible}
+              onChange={() => onToggleLayer(layer.id)}
+            />
+            <label htmlFor={layer.id}>{layer.name}</label>
+          </div>
+        ))}
+      </div>
 
-      {choroplethIsVisible && (
-        <div className="choropleth-controls">
-          <label htmlFor="attribute-select">Visualizar por:</label>
-          <select 
-            id="attribute-select"
-            value={selectedAttribute} 
-            onChange={onAttributeChange}
-          >
-   
-            {attributes.map(attr => (
-              <option key={attr.value} value={attr.value}>
-                {attr.label}
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
+      <div className="attribute-selector">
+        <label htmlFor="attribute-select">Atributo:</label>
+        <select id="attribute-select" value={selectedAttribute} onChange={onAttributeChange}>
+          {attributes.map(attr => (
+            <option key={attr.value} value={attr.value}>
+              {attr.label}
+            </option>
+          ))}
+        </select>
+      </div>
+      
+
     </div>
   );
 }

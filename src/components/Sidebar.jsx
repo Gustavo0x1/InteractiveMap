@@ -1,6 +1,6 @@
 import React from 'react';
 
-// Remova onDataUpload dos parâmetros
+
 function Sidebar({ layers, attributes, selectedAttribute, onToggleLayer, onAttributeChange }) {
   return (
     <div className="sidebar">

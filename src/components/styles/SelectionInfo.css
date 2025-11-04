@@ -2,7 +2,7 @@
 .selection-info {
   width: 350px; /* Largura fixa */
   flex-shrink: 0; /* Impede que a barra encolha */
-  background-color: #ffffff;
+  background-color: #fff;
   border-left: 1px solid #ddd; /* Linha para separar do mapa */
   display: flex;
   flex-direction: column;

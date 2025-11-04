@@ -8,46 +8,42 @@ import SelectionInfo from './SelectionInfo';
 import 'leaflet-draw/dist/leaflet.draw.css';
 
 const createTooltipContent = (properties) => {
-  // Lista de propriedades base para ignorar (do GeoJSON ou do Shapefile original)
+
   const ignoreProps = [
-    'id', 'name', 'description', // de mg-municipios.json
+    'id', 'name', 'description',
     'ID', 'LAT', 'LON', 'JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 
-    'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC', 'ANNUAL', // de Irrad.zip
-    'municipios' // Ignora a coluna chave do CSV, já que usamos 'name'
+    'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC', 'ANNUAL', 
+    'municipios' 
   ];
-  
-  // Usa a propriedade 'name' (do GeoJSON) como título padrão
+
   const name = properties.name || 'Sem nome';
-  
-  // Classes CSS definidas em App.css
+
   let content = `<strong class="tooltip-title">${name}</strong><hr class="tooltip-hr">`;
   content += '<div class="tooltip-grid">';
 
   let dataFound = false;
-  // Itera por todas as propriedades da feição
+
   for (const key in properties) {
-    // Verifica se a propriedade não está na lista de ignorados
+
     if (!ignoreProps.includes(key) && Object.prototype.hasOwnProperty.call(properties, key)) {
       let value = properties[key];
-      
-      // Formata números para 2 casas decimais, se forem float
+
       if (typeof value === 'number' && !Number.isInteger(value)) {
         value = value.toFixed(2);
       }
-      // Trata valores nulos ou vazios
+
       if (value === '-' || value === null || value === undefined) {
         value = 'N/A';
       }
       
-      // Adiciona a linha (chave: valor) ao grid
+
       content += `<span class="tooltip-key">${key}:</span><span class="tooltip-value">${value}</span>`;
       dataFound = true;
     }
   }
 
-  // Fallback caso nenhuma propriedade do CSV seja encontrada
   if (!dataFound) {
-     if (properties.ANNUAL) { // Mostra o dado da camada de Irradiação
+     if (properties.ANNUAL) { 
         content += `<span class="tooltip-key">Irrad. Anual:</span><span class="tooltip-value">${properties.ANNUAL.toFixed(2)}</span>`;
      } else {
         return `<strong class="tooltip-title">${name}</strong><br>Sem dados adicionais.`;
@@ -100,15 +96,15 @@ const onEachFeature = (feature, layerInstance) => {
   if (feature.properties) {
     const tooltipContent = createTooltipContent(feature.properties);
     layerInstance.bindTooltip(tooltipContent, {
-      sticky: true, // Faz o tooltip seguir o mouse
-      className: 'custom-leaflet-tooltip' // Classe CSS para estilização
+      sticky: true, 
+      className: 'custom-leaflet-tooltip' 
     });
   }
 };
 return (
     <div className="map-wrapper">
       <MapContainer center={[-18.91, -44.55]} zoom={6} style={{ height: '100%', width: '100%' }} preferCanvas={true}>
-        {/* ... (TileLayer, FeatureGroup e GeoJSON layers continuam os mesmos) ... */}
+
          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution='&copy; OpenStreetMap' />
 
         <FeatureGroup ref={drawnItemsRef}>
@@ -143,7 +139,7 @@ return (
         {choroplethIsVisible && <Legend colorScale={colorScale} valueRange={valueRange} />}
       </MapContainer>
       
-      {/* 4. O painel de informações foi removido daqui */}
+  
     </div>
   );
 }

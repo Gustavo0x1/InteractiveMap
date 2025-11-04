@@ -16,11 +16,11 @@ const createLayerFromCSV = async (layerInfo, municipiosGeoJSON) => {
       throw new Error(`Falha ao buscar ${layerInfo.path} - Status ${response.status}`);
     }
     const csvText = await response.text();
-    // Faz o parse do CSV
+
     const results = Papa.parse(csvText, { header: true, skipEmptyLines: true });
     
     const customData = results.data;
-    // A primeira coluna (results.meta.fields[0]) é a chave
+ 
     const keyField = results.meta.fields[0]; 
 
     const dataMap = new Map();
@@ -40,7 +40,7 @@ const createLayerFromCSV = async (layerInfo, municipiosGeoJSON) => {
         const newProperties = { ...feature.properties };
         for (const key in matchingData) {
           const value = parseFloat(matchingData[key]);
-          // Se não for um número (NaN), mantém o valor original (ex: "-")
+        
           newProperties[key] = isNaN(value) ? matchingData[key] : value;
         }
         return { ...feature, properties: newProperties };
@@ -51,21 +51,19 @@ const createLayerFromCSV = async (layerInfo, municipiosGeoJSON) => {
     console.log(`[${layerInfo.name}] Feições unidas: ${newFeatures.length}`);
 
     if (newFeatures.length > 0) {
-      // --- INÍCIO DA CORREÇÃO ---
-      // Lista de colunas base do GeoJSON para ignorar
+ 
       const customExcluded = ['id', 'name', 'description'];
       
-      // A lógica agora usa os CABEÇALHOS (results.meta.fields) em vez dos dados da primeira linha
+
       const layerAttributes = results.meta.fields
         .filter(key =>
-          // Filtra apenas a coluna de junção (ex: 'municipios') e as colunas base
+      
           !customExcluded.includes(key) &&
           key.toLowerCase() !== keyField.toLowerCase()
         )
-        .map(key => ({ value: key, label: key })); // Adiciona TODOS os outros
+        .map(key => ({ value: key, label: key }));
       
       console.log(`[${layerInfo.name}] Atributos encontrados (${layerAttributes.length}):`, layerAttributes.map(a => a.value));
-      // --- FIM DA CORREÇÃO ---
 
       return {
         id: layerInfo.id,
@@ -73,7 +71,7 @@ const createLayerFromCSV = async (layerInfo, municipiosGeoJSON) => {
         data: { type: "FeatureCollection", features: newFeatures },
         visible: false,
         type: 'choropleth',
-        attributes: layerAttributes, // Adiciona a lista COMPLETA de atributos
+        attributes: layerAttributes,
       };
     }
     return null;
@@ -85,7 +83,7 @@ const createLayerFromCSV = async (layerInfo, municipiosGeoJSON) => {
 
 function App() {
   const [layers, setLayers] = useState([]);
-  const [attributes, setAttributes] = useState([]); // Atributos da camada ATIVA para o Sidebar
+  const [attributes, setAttributes] = useState([]);
   const [selectedAttribute, setSelectedAttribute] = useState('');
   const [valueRange, setValueRange] = useState([0, 0]);
   const [selectedFeatures, setSelectedFeatures] = useState({});
@@ -101,8 +99,6 @@ const handleAreaSelect = useCallback((drawnPolygon) => {
       return;
     }
 
-    // 1. Criamos um polígono "normalizado" a partir das coordenadas desenhadas.
-    //    Isso resolve inconsistências que podem confundir a biblioteca de interseção.
     const selectionPolygon = turf.polygon(drawnPolygon.geometry.coordinates);
 
     console.log("Analisando a área selecionada...");
@@ -119,7 +115,7 @@ layers.forEach(layer => {
             featuresInside.push(feature);
           }
         } catch (e) {
-          // Ignora erros de topologia
+
         }
       });
       if (featuresInside.length > 0) {
@@ -130,13 +126,11 @@ layers.forEach(layer => {
     console.log("Feições selecionadas por camada:", selectedByLayer);
     setSelectedFeatures(selectedByLayer);
   }, [layers]);
-
-  // Efeito para carregar todos os dados uma única vez
   useEffect(() => {
     const fetchData = async () => {
       console.log("--- Iniciando carregamento de todos os dados ---");
       try {
-        // 1. Carrega a camada base (mapa de calor) e extrai seus atributos
+ 
         const shpResponse = await fetch('/Irrad.zip');
         const arrayBuffer = await shpResponse.arrayBuffer();
         const geojsonData = await shp(arrayBuffer);
@@ -161,7 +155,6 @@ layers.forEach(layer => {
 
         let initialLayers = [choroplethLayer, brasilLayer];
         
-        // 2. Carrega as camadas personalizadas do manifesto
         const municipiosResponse = await fetch('/mg-municipios.geojson');
         const municipiosGeoJSON = await municipiosResponse.json();
         const manifestResponse = await fetch('/data/manifest.json');
@@ -183,7 +176,6 @@ layers.forEach(layer => {
     fetchData();
   }, []);
 
-  // Efeito para ATUALIZAR o seletor de atributos quando a camada visível muda
   useEffect(() => {
     const activeLayer = layers.find(l => l.visible && l.type === 'choropleth');
 
@@ -191,16 +183,15 @@ layers.forEach(layer => {
       console.log(`Camada ativa mudou para: "${activeLayer.name}". Atualizando atributos.`);
       setAttributes(activeLayer.attributes);
       
-      // Define o atributo selecionado como o primeiro da nova lista
+
       setSelectedAttribute(activeLayer.attributes[0]?.value || '');
     } else {
-      // Se nenhuma camada de calor estiver ativa, limpa o seletor
+
       setAttributes([]);
       setSelectedAttribute('');
     }
-  }, [layers]); // Depende apenas de [layers]
+  }, [layers]); 
 
-  // Efeito para ATUALIZAR a escala de cores
   useEffect(() => {
     const visibleChoropleth = layers.find(l => l.visible && l.type === 'choropleth');
     
@@ -208,32 +199,32 @@ layers.forEach(layer => {
       setValueRange([0, 0]);
       return;
     }
-    // Calcula os valores *apenas* para o atributo selecionado
+
     const values = visibleChoropleth.data.features
       .map(feature => feature.properties[selectedAttribute])
-      .filter(value => typeof value === 'number'); // Filtra strings, "-", null, etc.
+      .filter(value => typeof value === 'number'); 
     
     if (values.length > 0) {
       setValueRange([Math.min(...values), Math.max(...values)]);
     } else {
-      // Se o atributo selecionado não tiver dados numéricos, reseta a escala
+    
       setValueRange([0, 0]);
     }
-  }, [layers, selectedAttribute]); // Depende de [layers] e [selectedAttribute]
+  }, [layers, selectedAttribute]); 
 
-  // Função para ligar/desligar camadas
+
   const toggleLayerVisibility = (layerId) => {
     setLayers(prevLayers =>
       prevLayers.map(l => {
-        // Se for a camada clicada, inverte a visibilidade
+ 
         if (l.id === layerId) {
           return { ...l, visible: !l.visible };
         }
-        // Se for OUTRA camada de calor (choropleth), garante que ela seja desligada
+  
         if (l.type === 'choropleth') {
           return { ...l, visible: false };
         }
-        // Mantém as outras camadas (ex: limite do Brasil) como estão
+
         return l;
       })
     );

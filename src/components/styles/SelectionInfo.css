@@ -1,4 +1,7 @@
 /* Transforma o painel de informações em uma barra lateral fixa */
+.selection-info-pane{
+  background-color: wheat;
+}
 .selection-info {
   width: 350px; /* Largura fixa */
   flex-shrink: 0; /* Impede que a barra encolha */

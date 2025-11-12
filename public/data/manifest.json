@@ -1,15 +1,41 @@
 {
   "layers": [
     {
-      "id": "pecuaria",
-      "name": "Dados pecuaria",
+      "id": "cultivos-csv",
+      "name": "Cultivos (CSV)",
+      "path": "/data/dados_cultivos.csv"
+    },
+    {
+      "id": "pecuaria-csv",
+      "name": "Pecuária (CSV)",
       "path": "/data/dados_pecuaria.csv"
     },
     {
-      "id": "cultivos",
-      "name": "Dados cultivos",
-      "path": "/data/dados_cultivos.csv"
+      "id": "camada-icones-subestacoes",
+      "name": "Subestações (Ícones)",
+      "type": "point_icon", 
+      "path": "/subestacoes.geojson",
+      "visible": true,
+      "iconUrl": "/caminho/para/seu/icone.png", 
+      "iconSize": [30, 30] 
+    },
+    {
+      "id": "camada-circulos-interesse",
+      "name": "Pontos (Círculos)",
+      "type": "point_circle",
+      "path": "/pontos_interesse.geojson",
+      "visible": true,
+      "color": "#00FF00",
+      "radius": 8
+    },
+    {
+      "id": "camada-cooperativas",
+      "name": "Cooperativas",
+      "type": "point_icon",
+      "path": "/cooperativas.geojson",
+      "visible": true,
+      "iconUrl": "/icones/icone-coop-padrao.png", 
+      "iconSize": [50, 50] 
     }
-
   ]
 }

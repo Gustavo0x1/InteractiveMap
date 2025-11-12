@@ -59,3 +59,17 @@ body {
   position: relative;
   height: 100%; /* Importante para o posicionamento dos controles do Leaflet */
 }
+.cooperativa-icon {
+  /* Torna a imagem perfeitamente circular */
+  border-radius: 50% !important;
+  
+  /* Adiciona a borda */
+  /* Você pode mudar a cor (ex: #000 para preto) */
+  border: 3px solid #ffffff !important; 
+  
+  /* Adiciona uma sombra para destacar o ícone do mapa */
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4) !important;
+  
+  /* Garante que a imagem se ajuste ao formato */
+  object-fit: cover;
+}

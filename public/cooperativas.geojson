@@ -1,0 +1,200 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    { 
+      "type": "Feature", 
+      "properties": { 
+        "name": "assusbac", 
+        "contato": "Jose da Silva",
+        "TITULO":"Associação dos Usuários da Sub Bacia do Rio dos Cochos",
+        "DESCRICAO":"Fundada em 2003, a associação promove renda aos pequenos agricultores, apicultores e agroextrativistas de 8 comunidades na região de Januária no Norte de Minas Gerais. O grupo também realiza ações para a recuperação de nascentes e preservação do cerrado. Produtos: A cartela de produtos representa a diversidade de frutos e a riqueza da cultura e sabores da região: pequi in natura, conserva da polpa de pequi, óleo de pequi e babaçu, castanha de pequi, castanha de babaçu, doce de castanha de pequi; polpa de umbu, coquinho azedo, tamarindo; mel de abelhas, mel no favo.",
+        "icon_url": "/icones/cooperativas/assusbac.png" 
+      }, 
+      "geometry": { "type": "Point", "coordinates": [-44.9898824,-15.8919565] }
+    },
+        { 
+      "type": "Feature", 
+      "properties": { 
+        "name": "associaassapso-da-mariana-e-manteiga", 
+        "contato": "associaassapso da mariana e manteiga",
+        "TITULO":"TESTE",
+        "DESCRICAO":"TESTE2",
+        "icon_url": "/icones/cooperativas/associaassapso-da-mariana-e-manteiga.jpg" 
+      }, 
+      "geometry": { "type": "Point", "coordinates": [-43.0392866,-15.7441127] }
+    },
+     { 
+      "type": "Feature", 
+      "properties": { 
+        "name": "chico-fula", 
+        "contato": "associaassapso da mariana e manteiga",
+        "TITULO":"TESTE",
+        "DESCRICAO":"A marca nasceu no ano de 2002, através do projeto “Cestas de Produtos do Cerrado”, que contou com o suporte do PPP-Ecos/ISPN e do Movimento do Graal no Brasil. A associação foi criada para facilitar a comercialização dos produtos provenientes do agroextrativismo sustentável na cidade de Buritizeiro-MG. O grupo promove o trabalho sustentável dos pequenos agricultores familiares e agroextrativistas da região. Produtos: temos geleias e compotas de cagaita, tamarindo e buriti; licor de tangerina; doces de pequi e buriti em barra; vela aromática artesanal, paçocas; e outros derivados dos frutos do Cerrado.",
+        "icon_url": "/icones/cooperativas/chico-fula.jpg" 
+      }, 
+      "geometry": { "type": "Point", "coordinates": [-44.9896962,-17.3649178] }
+    },
+    { 
+      "type": "Feature", 
+      "properties": { 
+        "name": "coopaab", 
+        "contato": "associaassapso da mariana e manteiga",
+        "TITULO":"Cooperativa de Agricultores Familiares Agroextrativistas de Água Boa II",
+        "DESCRICAO":"Inserida em uma Comunidade Tradicional Geraizeira, a cooperativa é fortalecida pela diversidade produtiva da agricultura familiar, com o agroextrativismo e beneficiamento de frutos nativos, como a mangaba, pequi, maracujá e coquinho azedo, e a criação de pequenos e grandes animais. O Cerrado é a principal fonte de renda da região e 20 famílias são impactadas diretamente com o empreendimento. Produtos: Farinha de jatobá,óleo de pequi, polpa de pequi congelada. Polpas de frutas naturais: acerola, araçá, cagaita, mangaba,manga, maracujá nativo, maracujá amarelo, goiaba, umbu.",
+        "icon_url": "/icones/cooperativas/coopaab.jpg" 
+      }, 
+      "geometry": { "type": "Point", "coordinates": [-42.7556544,-15.6179394] }
+    },
+      { 
+      "type": "Feature", 
+      "properties": { 
+        "name": "coopanorte", 
+        "contato": "associaassapso da mariana e manteiga",
+        "TITULO":"Cooperativa de Agricultores Familiares Agroextrativistas e Trabalhadores no Processamento dos Frutos do Cerrado do Norte de Minas Gerais-MG",
+        "DESCRICAO":"A cooperativa foi registrada em 2017 e busca unir os extrativistas, agricultores familiares e criadores de animais, melhorando as condições de trabalho no manejo de espécies nativas e cultivadas, a produção, beneficiamento e comercialização de produtos. O grupo colabora para que o agroextrativismo seja uma atividade sólida para as famílias, gerando transformação socioeconômica. Os principais produtos são as polpas de coquinho azedo, maracujá nativo, umbu, tamarindo e maracujá; geleia de umbu; doces; sorvetes; leite pasteurizado; queijo mussarela; e baru in natura e torrado.",
+        "icon_url": "/icones/cooperativas/coopanorte.jpg" 
+      }, 
+      "geometry": { "type": "Point", "coordinates": [-44.8973302,-15.9558797] }
+    },
+     { 
+      "type": "Feature", 
+      "properties": { 
+        "name": "coopav", 
+        "contato": "associaassapso da mariana e manteiga",
+        "TITULO":"Cooperativa de Agricultores Familiares Agroextrativistas Vereda Funda",
+        "DESCRICAO":"O grupo é formado por famílias reconhecidas como Comunidade Tradicional Geraizeira. A cooperativa foi fundada em 2010 e vem fortalecendo a rede de profissionais do campo da região de Alto Rio Pardo, que trabalham com o agroextrativismo e cultivo do café, sem agrotóxicos, adotando um modelo sustentável agroflorestal. Produtos: café, café sombreado, pão artesanal, banana chips,banana passa, farinha de banana, farinha de mandioca, polvilho doce, melado de cana de açúcar,corante e polpa de pequi.",
+        "icon_url": "/icones/cooperativas/coopav.jpg" 
+      }, 
+      "geometry": { "type": "Point", "coordinates": [-42.5556544,-15.6179394] }
+    },
+       { 
+      "type": "Feature", 
+      "properties": { 
+        "name": "coopemira", 
+        "contato": "associaassapso da mariana e manteiga",
+        "TITULO":"TESTE",
+        "DESCRICAO":"TESTE2",
+        "icon_url": "/icones/cooperativas/coopemira.jpg" 
+      }, 
+      "geometry": { "type": "Point", "coordinates": [-47.87, -18.51] }
+    },
+      { 
+      "type": "Feature", 
+      "properties": { 
+        "name": "cooperuaçu", 
+        "contato": "associaassapso da mariana e manteiga",
+        "TITULO":"TESTE",
+        "DESCRICAO":"Fundado em 2016, o empreendimento fica na região do Parque Nacional Cavernas do Peruaçu, uma importante área de preservação ambiental, dotada de belezas rupestres e polo turístico. Com quase 60 cooperados, o grupo é fortalecido por agroextrativistas comprometidos com a proteção do Cerrado, realizando coletas sustentáveis, cuidando das nascentes e criando produtos de qualidade com os frutos do bioma. Produtos: polpas de frutas congeladas, polpa de pequi em conserva, creme de pequi, óleo de pequi, molho de pequi com pimenta e sem pimenta, farofa de pequi, castanha de pequi, farinha de jatobá, farinha de mandioca, geleia e compota de umbu, geleia de cagaita, tamarindo, coquinho azedo e doce de araticum. Além de frutos in natura: coquinho azedo, pequi, fava d ‘anta.",
+        "icon_url": "/icones/cooperativas/cooperuaau.jpg" 
+      }, 
+      "geometry": { "type": "Point", "coordinates": [-44.3916584,-15.4802473] }
+    },
+          { 
+      "type": "Feature", 
+      "properties": { 
+        "name": "COOPSERTÃO VEREDAS", 
+        "contato": "associaassapso da mariana e manteiga",
+        "TITULO":"Cooperativa Regional de Produtores Agrossilviextrativista Sertão Veredas",
+        "DESCRICAO":"O empreendimento foi criado em 2006 para organizar o grupo de agroextrativistas sustentáveis de comunidades tradicionais, quilombolas e assentamentos da reforma agrária na região do Parque Nacional Grande Sertão Veredas, no município de Chapada Gaúcha - MG.São mais de 110 cooperados trabalhando com o agroextrativismo dos frutos nativos para consumo e comercialização, gerando renda e desenvolvimento para as comunidades.Produtos: Polpa, óleo e farinha de pequi; raspa e óleo de buriti; polpas de cajuzinho do Cerrado, coquinho azedo, mangaba, araticum, araçá, tamarindo, goiaba, acerola e manga;doces e geleias de cajuzinho, cagaita e araticum; açúcar mascavo; mel, baru e farinha de mandioca, entre outros produtos da agricultura familiar",
+        "icon_url": "/icones/cooperativas/coop-sertao.jpg" 
+      }, 
+      "geometry": { "type": "Point", "coordinates": [-45.662186,-15.2984645] }
+    },
+          { 
+      "type": "Feature", 
+      "properties": { 
+        "name": "COOPER-RIACHÃO", 
+        "contato": "associaassapso da mariana e manteiga",
+        "TITULO":"Cooperativa de Agricultores Familiares e Agroextrativista Ambiental do Vale do Riachão Ltda",
+        "DESCRICAO":"Tudo começou com o propósito de colaborar com a Associação de Pequenos Produtores Rurais de Riacho D’antas e Adjacências no beneficiamento do coco macaúba. São 350 famílias impactadas diretamente e mais de 1400 pessoas de 4 municípios são beneficiadas indiretamente. Produtos: O grupo produz óleo da polpa do coco macaúba, óleo da amêndoa, sabão em pó, sabão em barra, sabonetes, ração de polpa e torta de amêndoa.",
+        "icon_url": "/icones/cooperativas/coperriachapso.jpg" 
+      }, 
+      "geometry": { "type": "Point", "coordinates": [-43.9334846,-16.7280758] }
+    },
+          { 
+      "type": "Feature", 
+      "properties": { 
+        "name": "delicias-de-salto", 
+        "contato": "associaassapso da mariana e manteiga",
+        "TITULO":"Associação dos Agricultores Familiares de Salto e Adjacências",
+        "DESCRICAO":"Criada em 1995, o grupo trabalha com produtos derivados do agroextrativismo e da agricultura familiar. Os associados realizam boas práticas de fabricação e participam de cursos de capacitação, buscando melhorar a qualidade dos produtos. Produtos: Pequi em conserva, in natura, congelado e em creme; farofa de jatobá, farofa de carne de sol com pequi; geleias, doces e polpas de cagaita, acerola, cajá, tamarindo, maracujá do mato e goiaba.",
+        "icon_url": "/icones/cooperativas/delicias-de-salto.jpg" 
+      }, 
+      "geometry": { "type": "Point", "coordinates": [-45.0707705,-16.6147396] }
+    },
+          { 
+      "type": "Feature", 
+      "properties": { 
+        "name": "frutos-de-agua-doce", 
+        "contato": "associaassapso da mariana e manteiga",
+        "TITULO":"Associação dos Pequenos Produtores Rurais de São Domingos I, Panelas e Água Doce",
+        "DESCRICAO":"Formado por veredeiros de comunidades rurais da cidade de Bonito de Minas, o grupo atua desde o ano de 2016, quando foram contemplados no edital “Sustentabilidade da Bacia do Rio Pandeiros:MPMG/FAPEMIG”. Com o comércio local e com a parceria da Cooperativa Grande Sertão e da Central do Cerrado, o empreendimento consegue expandir a produção de frutos in natura e semi-processamento. Produtos: Frutos in natura (buriti, cajuí, tamarindo, maracujá do mato, cagaita, mangaba, pequi, pimenta de macaco, araticum, coquinho azedo, fava d ́anta), frutos congelados e polpas, raspa de buriti, óleo de pequi, castanha de pequi e mudas de espécies nativas",
+        "icon_url": "/icones/cooperativas/frutos-de-agua-doce.jpg" 
+      }, 
+      "geometry": { "type": "Point", "coordinates": [-44.9552291,-15.3542209] }
+    },
+          { 
+      "type": "Feature", 
+      "properties": { 
+        "name": "grande-sertao", 
+        "contato": "associaassapso da mariana e manteiga",
+        "TITULO":"Cooperativa dos Agricultores Familiares e Agroextrativistas Grande Sertão Ltda",
+        "DESCRICAO":"O grupo formalizado em 2003 atua em mais de 30 municípios do Norte de Minas Gerais, com 268 cooperados e mais de 2000 famílias impactadas indiretamente. A cooperativa apoia e promove os agroextrativistas e agricultores familiares nas iniciativas de geração de renda, desenvolvimento sustentável e preservação ambiental. Com uma cartela de produtos bem diversa, o empreendimento permanece conquistando novos espaços. Produtos: Cerveja de coquinho azedo, polpas de frutas congeladas, polpa de pequi em conserva, creme de pequi, óleo de pequi, molho de pequi com pimenta e sem pimenta, farofa de pequi, castanha de pequi, farinha de jatobá, farinha de mandioca, geleia e compota de umbu, geleia de cagaita, tamarindo, coquinho azedo e doce de araticum. Frutos in natura: coquinho azedo, pequi, fava d ‘anta .",
+        "icon_url": "/icones/cooperativas/grande-sertao.jpg" 
+      }, 
+      "geometry": { "type": "Point", "coordinates": [-43.9334846,-16.7280758] }
+    },
+          { 
+      "type": "Feature", 
+      "properties": { 
+        "name": "mulheres-do-cerrado", 
+        "contato": "associaassapso da mariana e manteiga",
+        "TITULO":"TESTE",
+        "DESCRICAO":"Desde o ano de 1998, mulheres agricultoras familiares colaboram como voluntárias na Pastoral da Criança de São João da Ponte. Com o tempo, o trabalho se expandiu e elas transformaram as suas habilidades em geração de renda. Em 2020, o grupo se formalizou como cooperativa e é focado na produção de fitoterápicos, com plantas medicinais, doces, geleias e outros derivados dos frutos do Cerrado. Produtos: Geleias de umbu, cagaita, maracujá e jabuticaba; doces variados; granola; farinha de jatobá; pó de folhas de moringa; remédios caseiros; mel de abelhas; rapadura; farinha de mandioca; polpas de pequi e pequi congelado em caroços; açafrão; ervas medicinais desidratadas; tinturas de plantas medicinais nativas e cultivadas",
+        "icon_url": "/icones/cooperativas/mulheres-do-cerrado.jpg" 
+      }, 
+      "geometry": { "type": "Point", "coordinates": [-44.5704588,-15.9109083] }
+    },
+          { 
+      "type": "Feature", 
+      "properties": { 
+        "name": "pequitina", 
+        "contato": "associaassapso da mariana e manteiga",
+        "TITULO":"TESTE",
+        "DESCRICAO":"Pequitina é uma marca de alimentos idealizada por Vicentina Bispo na cidade de Januária - MG. Tina, que é beneficiadora do Pequi e de outros frutos do Cerrado, uniu seu saber construído na cultura alimentar com o conhecimento adquirido em um curso de agroindústria e desde então ela produz alimentos beneficiados saborosos e com alto valor nutricional. Produtos: barrinha de cereais, castanha de pequi cristalizada, castanha de pequi salgada, conserva da castanha de pequi, óleo de pequi, farofa do pequi, geleia de maracujá do mato com castanha de pequi, farofa de buriti, doce de jenipapo, jenipapo cristalizado, gengibre cristalizado, óleo de sucupira, pimenta de macaco.",
+        "icon_url": "/icones/cooperativas/pequitina.jpg" 
+      }, 
+      "geometry": { "type": "Point", "coordinates": [-44.7898824,-15.5919565] }
+    },
+          { 
+      "type": "Feature", 
+      "properties": { 
+        "name": "polpasport", 
+        "contato": "associaassapso da mariana e manteiga",
+        "TITULO":"TESTE",
+        "DESCRICAO":"Uma iniciativa de jovens surgida em 2014 buscava entender e combater o êxodo rural que levava jovens talentos da região embora de sua terra natal. O desejo de implementar políticas públicas voltadas para a juventude formou dessa iniciativa a Associação da Juventude Rural de Porteirinha - AJURP. Desde 2018 promove a geração de renda e qualidade de vida para a comunidade através da produção e do beneficiamento de polpas de frutas e também promovendo a sustentabilidade no semiárido norte-mineiro. Produtos: Polpas disponíveis de maracujá nativo (maracujá-do-mato), acerola, seriguela, goiaba, maracujá, coquinho azedo, umbu, cajá, manga e tamarindo.",
+        "icon_url": "/icones/cooperativas/polpasport.jpg" 
+      }, 
+      "geometry": { "type": "Point", "coordinates": [-43.0516816,-15.7452858] }
+    },
+          { 
+      "type": "Feature", 
+      "properties": { 
+        "name": "sabores-de-agreste", 
+        "contato": "associaassapso da mariana e manteiga",
+        "TITULO":"Associação dos Pequenos Produtores e Agricultores Familiares Rurais de Agreste",
+        "DESCRICAO":"Fundado em 2013, o grupo formado por mulheres começou coletando frutos, como o umbu. O trabalho cresceu e, com capacitação, começaram a criar produtos com as receitas da comunidade e com a descoberta de outras misturas e sabores. Os frutos do Cerrado, da Caatinga e de quintal são a base dos produtos. O grupo marcou a presença feminina no segmento produtivo e empreendedor da comunidade. Produtos: possui uma variedade de produtos, como polpas e geleias de umbu, acerola, tamarindo, manga; doce de abóbora com tamarindo; doce de leite puro, com coco, com caramelo de café, com amendoim; e muitos outros sabores.",
+        "icon_url": "/icones/cooperativas/sabores-de-agreste.png" 
+      }, 
+      "geometry": { "type": "Point", "coordinates": [-44.4724687,-15.3606772] }
+    },
+    { 
+      "type": "Feature", 
+      "properties": { 
+        "name": "Cooperativa XYZ (Icone Padrão)",
+        "contato": "Maria Souza"
+      }, 
+      "geometry": { "type": "Point", "coordinates": [-44.93, -19.92] }
+    }
+  ]
+}

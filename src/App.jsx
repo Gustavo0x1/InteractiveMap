@@ -7,7 +7,7 @@ import Sidebar from './components/Sidebar';
 import MapComponent from './components/MapComponent';
 import './components/styles/App.css';
 import SelectionInfo from './components/SelectionInfo';
-import FeatureInfoSidebar from './components/FeatureInfoSidebar';
+import Welcome from './components/Welcome'; 
 // A sua função createLayerFromCSV permanece idêntica
 const createLayerFromCSV = async (layerInfo, municipiosGeoJSON) => {
   try {
@@ -99,7 +99,9 @@ const createLayerFromGeoJSON = async (layerInfo) => {
     return null;
   }
 };
+
 function App() {
+  const [showMap, setShowMap] = useState(false);
   const [layers, setLayers] = useState([]);
   const [attributes, setAttributes] = useState([]);
   const [selectedAttribute, setSelectedAttribute] = useState('');
@@ -167,14 +169,8 @@ function App() {
           visible: true, type: 'choropleth', attributes: shpAttributes,
         };
 
-        const brasilResponse = await fetch('/limite_brasil.geojson');
-        const brasilData = await brasilResponse.json();
-        const brasilLayer = {
-          id: 'brasil-limite', name: 'Limite do Brasil', data: brasilData,
-          visible: false, type: 'geojson',
-        };
 
-        let initialLayers = [choroplethLayer, brasilLayer];
+        let initialLayers = [choroplethLayer];
         
         // Carrega os municípios base para fazer o "join" com os CSVs
         const municipiosResponse = await fetch('/mg-municipios.geojson');
@@ -225,7 +221,18 @@ useEffect(() => {
       setSelectedAttribute('');
     }
   }, [layers]);
-
+useEffect(() => {
+    const featureCount = Object.keys(selectedFeatures).length;
+    if (featureCount > 0) {
+      // 1. Se feições forem encontradas, ligue o painel
+      setInfoPaneVisible(true);
+      // 2. Garanta que o modo Feature (Cooperativa) esteja desligado
+      setSelectedFeatureData(null);
+    } else if (infoPaneVisible && !selectedFeatureData) {
+      // 3. Caso o usuário limpe o polígono e o painel esteja aberto, feche-o
+      setInfoPaneVisible(false);
+    }
+  }, [selectedFeatures]);
 useEffect(() => {
 
     const visibleChoropleth = layers.find(l => l.visible && l.type === 'choropleth');
@@ -289,6 +296,11 @@ const toggleLayerVisibility = (layerId) => {
       })
     );
   };
+const handleCloseSidebar = () => {
+    setInfoPaneVisible(false);
+    setSelectedFeatureData(null);
+    setSelectedFeatures({}); 
+  };
 const handlePolygonClick = () => {
   console.log("clkc")
     if (Object.keys(selectedFeatures).length > 0) {
@@ -299,10 +311,14 @@ const handlePolygonClick = () => {
   const closeInfoPane = () => {
     setInfoPaneVisible(false);
   };
-  const handleFeatureClick = (featureData) => {
+const handleFeatureClick = (featureData) => {
     console.log("Feature clicada:", featureData);
+    // 1. Define os dados da feição
     setSelectedFeatureData(featureData);
-    setInfoPaneVisible(false); // Fecha o painel de seleção de área
+    // 2. Garante que a seleção de área esteja zerada
+    setSelectedFeatures({}); 
+    // 3. MUDANÇA CRUCIAL: Ativa o painel de forma explícita
+    setInfoPaneVisible(true); 
   };
   const closeFeatureInfoPane = () => {
     setSelectedFeatureData(null);
@@ -320,19 +336,12 @@ return (
         onAttributeChange={handleAttributeChange}
       />
       
-      {/* 3. Renderiza o painel aqui, se estiver visível */}
       {infoPaneVisible && (
         <SelectionInfo
           selectedFeatures={selectedFeatures}
+          featureData={selectedFeatureData}
           layers={layers}
-          onClose={closeInfoPane}
-        />
-      )}
-{/* --- 5. Renderize o novo Sidebar de Feature --- */}
-      {selectedFeatureData && (
-        <FeatureInfoSidebar
-          data={selectedFeatureData}
-          onClose={closeFeatureInfoPane}
+          onClose={handleCloseSidebar}
         />
       )}
       <MapComponent
@@ -341,8 +350,8 @@ return (
         valueRange={valueRange}
         onAreaSelect={handleAreaSelect}
         selectedFeatures={selectedFeatures}
-        onPolygonClick={handlePolygonClick} // Passa a função para o MapComponent
-      onFeatureClick={handleFeatureClick}
+        onPolygonClick={handlePolygonClick}
+        onFeatureClick={handleFeatureClick}
       />
     </div>
   );

@@ -3,7 +3,7 @@
   background-color: wheat;
 }
 .selection-info {
-  width: 350px; /* Largura fixa */
+  width: 550px; /* Largura fixa */
   flex-shrink: 0; /* Impede que a barra encolha */
   background-color: #fff;
   border-left: 1px solid #ddd; /* Linha para separar do mapa */
@@ -74,3 +74,24 @@
   font-weight: bold;
   margin-right: 5px;
 }
+
+   .option-group {
+        display: flex;
+        gap: 20px;
+        justify-content: center;
+        margin-top: 20px;
+    }
+
+    .option-item {
+        text-align: center;
+        font-family: Arial, sans-serif;
+    }
+
+    .option-item img {
+        width: 120px;      /* tamanho fixo */
+        height: 120px;     /* tamanho fixo */
+        object-fit: cover; /* mantém o enquadramento mesmo com imagens diferentes */
+        border-radius: 8px;
+        border: 2px solid #ccc;
+        margin-bottom: 8px;
+    }

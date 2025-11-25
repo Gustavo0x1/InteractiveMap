@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell } from 'recharts';
 import './styles/SelectionInfo.css';
-import Elevado from '/img/TiposDePainel/Elevado.webp'
-import Semitransparente from '/img/TiposDePainel/Semitransparente.webp'
-import Vertical from '/img/TiposDePainel/Vertical.webp'
+
 
 // Lista de propriedades a ignorar
 const IGNORE_PROPS = [
@@ -395,23 +393,7 @@ function SelectionInfo({ selectedFeatures, featureData, layers, onClose, recomme
           
           {diagnosisBlock}
 
-          <div className="option-group">
-            <label className="option-item">
-                <img src={Semitransparente} alt="Painel Semitransparente"/>
-                <div>Semitransparente</div>
-                <input type="radio" name="option" value="1"/>
-            </label>
-            <label className="option-item">
-                <img src={Vertical} alt="Painel Vertical"/>
-                <div>Vertical</div>
-                <input type="radio" name="option" value="2"/>
-            </label>
-            <label className="option-item">
-                <img src={Elevado} alt="Painel Elevado"/>
-                <div>Elevado</div>
-                <input type="radio" name="option" value="3"/>
-            </label>
-          </div>
+
 
           <hr/>
           

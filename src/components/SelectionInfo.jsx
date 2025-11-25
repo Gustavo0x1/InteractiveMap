@@ -394,7 +394,6 @@ function SelectionInfo({ selectedFeatures, featureData, layers, onClose, recomme
           {diagnosisBlock}
 
 
-
           <hr/>
           
           {aggregatedLayers.length > 0 && (
@@ -426,15 +425,6 @@ function SelectionInfo({ selectedFeatures, featureData, layers, onClose, recomme
 
                               <ColumnChart properties={layer.properties} layerName={layer.name} />
 
-                              <div className="feature-details-list average-table" style={{marginTop: '15px'}}>
-                                  <h5 style={{margin: '0 0 5px 0', color:'#777', fontSize: '0.9em'}}>
-                                      {layer.calculationType.includes('Destaque') ? 'Detalhamento do Maior Valor:' : 'Dados Detalhados:'}
-                                  </h5>
-                                  {Object.entries(layer.properties).map(([key, value]) => {
-                                      if (layer.calculationType.includes('Destaque') && key !== maxKey) return null;
-                                      return renderProperty(key, value, layer.calculationType);
-                                  })}
-                              </div>
                           </div>
                       );
                   })}

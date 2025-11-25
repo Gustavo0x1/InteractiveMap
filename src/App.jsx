@@ -101,6 +101,7 @@ const createLayerFromGeoJSON = async (layerInfo) => {
 };
 
 function App() {
+  const [recommendations, setRecommendations] = useState({});
   const [showMap, setShowMap] = useState(false);
   const [layers, setLayers] = useState([]);
   const [attributes, setAttributes] = useState([]);
@@ -153,7 +154,11 @@ function App() {
     const fetchData = async () => {
       console.log("--- Iniciando carregamento de todos os dados ---");
       try {
- 
+        const recResponse = await fetch('/data/recommendations.csv');
+        const recText = await recResponse.text();
+        const recParsed = Papa.parse(recText, { header: true, skipEmptyLines: true });
+        console.log("CSV Bruto Carregado:", recParsed.data);
+
         const shpResponse = await fetch('/Irrad.zip');
         const arrayBuffer = await shpResponse.arrayBuffer();
         const geojsonData = await shp(arrayBuffer);
@@ -169,7 +174,16 @@ function App() {
           visible: true, type: 'choropleth', attributes: shpAttributes,
         };
 
-
+        const recMap = {};
+        recParsed.data.forEach(row => {
+            if (row.Cultura) {
+                // Normaliza para maiúsculas para evitar erro de digitação
+                const key = row.Cultura.toUpperCase(); 
+                recMap[key] = row;
+            }
+        });
+        setRecommendations(recMap);
+        console.log("Recomendações carregadas:", recMap);
         let initialLayers = [choroplethLayer];
         
         // Carrega os municípios base para fazer o "join" com os CSVs
@@ -342,6 +356,7 @@ return (
           featureData={selectedFeatureData}
           layers={layers}
           onClose={handleCloseSidebar}
+          recommendations={recommendations}
         />
       )}
       <MapComponent

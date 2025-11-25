@@ -72,11 +72,11 @@
       "properties": { 
         "name": "coopemira", 
         "contato": "associaassapso da mariana e manteiga",
-        "TITULO":"TESTE",
-        "DESCRICAO":"TESTE2",
+        "TITULO":"Cooperativa dos Assentados Beneficiadores e Agricultores Familiares e Agroextrativistas de Produtos do Cerrado de Mirabela",
+        "DESCRICAO":"A comunidade beneficiada com a abundância de frutos é um exemplo de valorização do “Ouro do Cerrado”, o pequi, que é o seu principal produto, gera inclusão social e alimentação nutritiva para as famílias. O baru e o panã também são coletados pelo empreendimento. Os agroextrativistas da região são grandes apreciadores das belezas e riquezas do Cerrado e desejam que o bioma seja cada vez mais valorizado e protegido. Produtos: Pequi in natura, pequi roletado, polpa de pequi, pequi congelado, óleo de pequi e castanha de baru",
         "icon_url": "/icones/cooperativas/coopemira.jpg" 
       }, 
-      "geometry": { "type": "Point", "coordinates": [-47.87, -18.51] }
+      "geometry": { "type": "Point", "coordinates": [-44.1872852,-16.2538012] }
     },
       { 
       "type": "Feature", 

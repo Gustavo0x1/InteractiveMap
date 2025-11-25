@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell } from 'recharts';
+import introJs from 'intro.js';
+import 'intro.js/introjs.css';
 import './styles/SelectionInfo.css';
 
 
@@ -201,6 +203,61 @@ const calculateMetricsForFeatures = (features, operation = 'AVERAGE') => {
 
 function SelectionInfo({ selectedFeatures, featureData, layers, onClose, recommendations }) {
   
+  // --- TUTORIAL INTRO.JS (NOVO) ---
+  useEffect(() => {
+    // Usamos setTimeout para garantir que o React terminou de renderizar os elementos do DOM
+    const timer = setTimeout(() => {
+        // Verifica se estamos no modo de Relatório de Área
+        if (selectedFeatures && Object.keys(selectedFeatures).length > 0) {
+            
+            // Definimos passos potenciais
+            const possibleSteps = [
+                {
+                    element: '.selection-info',
+                    title: 'Relatório de Inteligência',
+                    intro: 'Este painel consolida os dados de todas as camadas que interceptam a área que você desenhou.',
+                    position: 'left'
+                },
+                {
+                    element: '.insight-box', // Só existe se houver recomendação/diagnóstico
+                    title: 'Diagnóstico Inteligente',
+                    intro: 'O sistema identificou um polo produtor aqui! Veja as recomendações de tecnologia e irrigação.',
+                    position: 'left'
+                },
+                {
+                    element: '.chart-container', // Só existe se houver dados numéricos para gráfico
+                    title: 'Visualização de Dados',
+                    intro: 'Acompanhe as médias ou totais de produção/irradiação através destes gráficos.',
+                    position: 'left'
+                },
+                {
+                    element: '.selection-info-pane', // Para listas de associações
+                    title: 'Associações e Pontos',
+                    intro: 'Aqui estão listadas as cooperativas ou pontos de interesse encontrados dentro da área.',
+                    position: 'left'
+                }
+            ];
+
+            // Filtramos apenas os passos cujos elementos REALMENTE existem na tela agora
+            const activeSteps = possibleSteps.filter(step => document.querySelector(step.element));
+
+            if (activeSteps.length > 0) {
+                introJs().setOptions({
+                    steps: activeSteps,
+                    showProgress: true,
+                    showBullets: false,
+                    nextLabel: 'Próximo',
+                    prevLabel: 'Anterior',
+                    doneLabel: 'Entendi'
+                }).start();
+            }
+        }
+    }, 800); // Espera um pouco para garantir que a transição/renderização acabou
+
+    return () => clearTimeout(timer);
+  }, [selectedFeatures]); // Recarrega se as feições mudarem (ex: usuário desenhar outro polígono)
+
+
   const getLayerName = (layerId) => {
     const layer = layers.find(l => l.id === layerId);
     return layer ? layer.name : layerId;
@@ -394,6 +451,7 @@ function SelectionInfo({ selectedFeatures, featureData, layers, onClose, recomme
           {diagnosisBlock}
 
 
+
           <hr/>
           
           {aggregatedLayers.length > 0 && (
@@ -425,6 +483,7 @@ function SelectionInfo({ selectedFeatures, featureData, layers, onClose, recomme
 
                               <ColumnChart properties={layer.properties} layerName={layer.name} />
 
+                        
                           </div>
                       );
                   })}
@@ -435,8 +494,8 @@ function SelectionInfo({ selectedFeatures, featureData, layers, onClose, recomme
           {flatOtherFeatures.length > 0 && (
               <>
                   <hr/>
-                  <h4>Associações na região</h4>
-                  <ul style={{ listStyle: 'none', padding: 0 }}>
+                  <h4 >Associações na região</h4>
+                  <ul className='associacoes_intro' style={{ listStyle: 'none', padding: 0 }}>
                     {flatOtherFeatures.map((feature, index) => (
                        
                       <li key={`${feature._layerName}-${index}`} style={{ marginBottom: '20px', border: '1px solid #e0e0e0', borderRadius: '6px', padding: '10px', backgroundColor: '#fff' }}>

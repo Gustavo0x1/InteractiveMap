@@ -56,7 +56,7 @@ const ColumnChart = ({ properties, layerName }) => {
     } else {
         data.sort((a, b) => b.value - a.value);
         data = data.slice(0, 15);
-        chartTitle = `Ranking (Top 15)`;
+        chartTitle = `Principais`;
     }
 
     return (
@@ -244,12 +244,7 @@ const SimulationResults = ({ inputs, layers }) => {
                     <span className="result-label">Área de Ocupação</span>
                     <span className="result-value">{totalOccupiedArea.toFixed(1)} <small>m²</small></span>
                 </div>
-                <div className="result-item">
-                    <span className="result-label">Eficiência do Painel</span>
-                    <span className="result-value" style={{ color: moduleEfficiency > 23 || moduleEfficiency < 15 ? '#d97706' : '#64748b' }}>
-                        {moduleEfficiency.toFixed(1)}%
-                    </span>
-                </div>
+             
                 <div className="result-item">
                     <span className="result-label">Geração Anual</span>
                     <span className="result-value">{(annualGeneration/1000).toFixed(2)} <small>MWh</small></span>
@@ -287,7 +282,7 @@ function SelectionInfo({ selectedFeatures, featureData, layers, onClose, recomme
             const steps = [
                 {
                     element: '.info-panel-floating',
-                    intro: 'Este é o <b>Relatório de Inteligência</b>. Aqui consolidamos todos os dados da área que você selecionou no mapa.',
+                    intro: 'Este é o <b>Relatório da seleção</b>. Aqui consolidamos todos os dados da área que você selecionou no mapa.',
                     position: 'right'
                 },
                 {
@@ -353,7 +348,7 @@ function SelectionInfo({ selectedFeatures, featureData, layers, onClose, recomme
 
   if (!isAreaSelection && !isFeatureSelection) return null;
 
-  const title = isAreaSelection ? "Relatório de Inteligência" : (featureData.name || "Informações");
+  const title = isAreaSelection ? "Relatório da seleção" : (featureData.name || "Informações");
   const subtitle = isAreaSelection ? "Análise de Área" : "Detalhes da Feição";
 
   let content = null;

@@ -1,375 +1,285 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import * as turf from '@turf/turf';
-import shp from 'shpjs';
-import Papa from 'papaparse';
-import 'leaflet/dist/leaflet.css';
-import Sidebar from './components/Sidebar';
-import MapComponent from './components/MapComponent';
-import './components/styles/App.css';
-import SelectionInfo from './components/SelectionInfo';
-import Welcome from './components/Welcome';
+import React, { useState, useEffect } from 'react';
+import { Menu, X, CheckCircle, Mail, MapPin, Phone, ArrowRight, Star } from 'lucide-react';
 
-// --- IMPORTAÇÕES DO INTRO.JS ---
-import 'intro.js/introjs.css';
-import introJs from 'intro.js';
+import AgroPvIMG from '/src/img/FrontPage/AgroPvImg.jpg'
 
-// ... (Mantenha as funções createLayerFromCSV e createLayerFromGeoJSON exatamente como estavam) ...
-const createLayerFromCSV = async (layerInfo, municipiosGeoJSON) => {
-  try {
-    console.log(`[${layerInfo.name}] Iniciando carregamento (CSV)...`);
-    const response = await fetch(layerInfo.path);
-    if (!response.ok) {
-      throw new Error(`Falha ao buscar ${layerInfo.path} - Status ${response.status}`);
-    }
-    const csvText = await response.text();
+// 1. Componente de Navegação (Header)
+const Navigation = () => {
+  const [isNavOpen, setIsNavOpen] = useState(false);
 
-    const results = Papa.parse(csvText, { header: true, skipEmptyLines: true });
-    
-    const customData = results.data;
- 
-    const keyField = results.meta.fields[0]; 
-
-    const dataMap = new Map();
-    customData.forEach(row => {
-      const normalizedName = row[keyField]?.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
-      if (normalizedName) {
-        dataMap.set(normalizedName, row);
-      }
-    });
-
-    const newFeatures = municipiosGeoJSON.features.map(feature => {
-      const geojsonName = feature.properties.name;
-      const normalizedGeojsonName = geojsonName.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
-      const matchingData = dataMap.get(normalizedGeojsonName);
-
-      if (matchingData) {
-        const newProperties = { ...feature.properties };
-        for (const key in matchingData) {
-          const value = parseFloat(matchingData[key]);
-        
-          newProperties[key] = isNaN(value) ? matchingData[key] : value;
-        }
-        return { ...feature, properties: newProperties };
-      }
-      return null;
-    }).filter(Boolean);
-
-    console.log(`[${layerInfo.name}] Feições unidas: ${newFeatures.length}`);
-
-    if (newFeatures.length > 0) {
- 
-      const customExcluded = ['id', 'name', 'description'];
-      
-
-      const layerAttributes = results.meta.fields
-        .filter(key =>
-      
-          !customExcluded.includes(key) &&
-          key.toLowerCase() !== keyField.toLowerCase()
-        )
-        .map(key => ({ value: key, label: key }));
-      
-      console.log(`[${layerInfo.name}] Atributos encontrados (${layerAttributes.length}):`, layerAttributes.map(a => a.value));
-
-      return {
-        id: layerInfo.id,
-        name: layerInfo.name,
-        data: { type: "FeatureCollection", features: newFeatures },
-        visible: false,
-        type: 'choropleth', 
-        attributes: layerAttributes,
-      };
-    }
-    return null;
-  } catch (error) {
-    console.error(`Erro ao carregar a camada ${layerInfo.name}:`, error);
-    return null;
-  }
-};
-
-const createLayerFromGeoJSON = async (layerInfo) => {
-  try {
-    console.log(`[${layerInfo.name}] Iniciando carregamento (GeoJSON)...`);
-    const response = await fetch(layerInfo.path);
-    if (!response.ok) {
-      throw new Error(`Falha ao buscar ${layerInfo.path} - Status ${response.status}`);
-    }
-    const geojsonData = await response.json();
-
-    return {
-      ...layerInfo, 
-      data: geojsonData,
-    };
-  } catch (error) {
-    console.error(`Erro ao carregar a camada GeoJSON ${layerInfo.name}:`, error);
-    return null;
-  }
-};
-
-function App() {
-  // ... (Estados existentes) ...
-  const [recommendations, setRecommendations] = useState({});
-  const [showMap, setShowMap] = useState(false);
-  const [layers, setLayers] = useState([]);
-  const [attributes, setAttributes] = useState([]);
-  const [selectedAttribute, setSelectedAttribute] = useState('');
-  const [valueRange, setValueRange] = useState([0, 0]);
-  const [selectedFeatures, setSelectedFeatures] = useState({});
-  const [infoPaneVisible, setInfoPaneVisible] = useState(false);
-  const [selectedFeatureData, setSelectedFeatureData] = useState(null);
-  
-  const ATTRIBUTE_MAP = {
-    JAN: 'Janeiro', FEB: 'Fevereiro', MAR: 'Março', APR: 'Abril', MAY: 'Maio', JUN: 'Junho',
-    JUL: 'Julho', AUG: 'Agosto', SEP: 'Setembro', OCT: 'Outubro', NOV: 'Novembro', DEC: 'Dezembro', ANNUAL: 'Anual',
-  };
-
-  // --- CONFIGURAÇÃO DO TUTORIAL ---
-  useEffect(() => {
-    // Usamos um pequeno timeout para garantir que o mapa e os controles (Leaflet Draw) já foram renderizados no DOM
-    const timer = setTimeout(() => {
-      introJs().setOptions({
-        steps: [
-          {
-            title: 'Bem-vindo!',
-            intro: 'Bem-vindo à ferramenta de análise AGROPV! Vamos fazer um tour rápido pelas funcionalidades.',
-          },
-          {
-            element: '.leaflet-draw', // Classe padrão do Leaflet Draw
-            intro: 'Utilize estas ferramentas para desenhar polígonos no mapa e filtrar os dados.',
-            position: 'left'
-          },
-          {
-            element: '.sidebar', // Classe do seu componente Sidebar
-            intro: 'Aqui nesta barra lateral você controla as camadas visíveis e visualiza informações detalhadas.',
-            position: 'right'
-          }
-        ],
-        showProgress: true,
-        showBullets: false,
-        nextLabel: 'Próximo',
-        prevLabel: 'Anterior',
-        doneLabel: 'Pronto'
-      }).start();
-    }, 1000); // Espera 1 segundo após a montagem
-
-    return () => clearTimeout(timer);
-  }, []); // Executa apenas uma vez na montagem do componente
-
-  // ... (Restante das funções: handleAreaSelect, useEffects de dados, etc.) ...
-
-  const handleAreaSelect = useCallback((drawnPolygon) => {
-    if (!drawnPolygon?.geometry || !drawnPolygon.geometry.coordinates?.length) {
-      console.error("Polígono desenhado é inválido:", drawnPolygon);
-      return;
-    }
-
-    const selectionPolygon = turf.polygon(drawnPolygon.geometry.coordinates);
-    console.log("Analisando a área selecionada...");
-
-    const visibleLayers = layers.filter(l => l.visible);
-    const selectedByLayer = {};
-
-    layers.forEach(layer => {
-      if (!layer?.data?.features) return;
-      const featuresInside = [];
-      layer.data.features.forEach(feature => {
-        try {
-          if (feature?.geometry && turf.booleanIntersects(drawnPolygon, feature)) {
-            featuresInside.push(feature);
-          }
-        } catch (e) { }
-      });
-      if (featuresInside.length > 0) {
-        selectedByLayer[layer.id] = featuresInside;
-      }
-    });
-
-    console.log("Feições selecionadas por camada:", selectedByLayer);
-    setSelectedFeatures(selectedByLayer);
-  }, [layers]);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      // ... (código original de fetchData) ...
-      console.log("--- Iniciando carregamento de todos os dados ---");
-      try {
-        const recResponse = await fetch('/data/recommendations.csv');
-        const recText = await recResponse.text();
-        const recParsed = Papa.parse(recText, { header: true, skipEmptyLines: true });
-        
-        const shpResponse = await fetch('/Irrad.zip');
-        const arrayBuffer = await shpResponse.arrayBuffer();
-        const geojsonData = await shp(arrayBuffer);
-        
-        const shpProps = geojsonData.features[0].properties;
-        const baseExcluded = ['ID', 'LAT', 'LON'];
-        const shpAttributes = Object.keys(shpProps)
-          .filter(key => typeof shpProps[key] === 'number' && !baseExcluded.includes(key.toUpperCase()))
-          .map(key => ({ value: key, label: ATTRIBUTE_MAP[key.toUpperCase()] || key }));
-
-        const choroplethLayer = {
-          id: 'choropleth-mg', name: 'Mapa de Calor MG', data: geojsonData,
-          visible: true, type: 'choropleth', attributes: shpAttributes,
-        };
-
-        const recMap = {};
-        recParsed.data.forEach(row => {
-            if (row.Cultura) {
-                const key = row.Cultura.toUpperCase(); 
-                recMap[key] = row;
-            }
-        });
-        setRecommendations(recMap);
-        
-        let initialLayers = [choroplethLayer];
-        
-        const municipiosResponse = await fetch('/mg-municipios.geojson');
-        const municipiosGeoJSON = await municipiosResponse.json();
-        
-        const manifestResponse = await fetch('/data/manifest.json');
-        const manifest = await manifestResponse.json();
-
-        const customLayerPromises = manifest.layers.map(layerInfo => {
-          if (layerInfo.type === 'point_icon' || layerInfo.type === 'point_circle') {
-            return createLayerFromGeoJSON(layerInfo);
-          }
-          return createLayerFromCSV(layerInfo, municipiosGeoJSON);
-        });
-        
-        const loadedCustomLayers = (await Promise.all(customLayerPromises)).filter(Boolean);
-        initialLayers = [...initialLayers, ...loadedCustomLayers];
-
-        setLayers(initialLayers);
-      } catch (error) {
-        console.error("Erro ao carregar as camadas:", error);
-      }
-    };
-    fetchData();
-  }, []);
-
-  useEffect(() => {
-    const activeLayer = layers.find(l => l.visible && l.type === 'choropleth');
-    if (activeLayer && activeLayer.attributes) {
-      setAttributes(activeLayer.attributes);
-      setSelectedAttribute(activeLayer.attributes[0]?.value || '');
-    } else {
-      setAttributes([]);
-      setSelectedAttribute('');
-    }
-  }, [layers]);
-
-  useEffect(() => {
-    const featureCount = Object.keys(selectedFeatures).length;
-    if (featureCount > 0) {
-      setInfoPaneVisible(true);
-      setSelectedFeatureData(null);
-    } else if (infoPaneVisible && !selectedFeatureData) {
-      setInfoPaneVisible(false);
-    }
-  }, [selectedFeatures]);
-
-  useEffect(() => {
-    const visibleChoropleth = layers.find(l => l.visible && l.type === 'choropleth');
-    if (!visibleChoropleth || !selectedAttribute) {
-      setValueRange([0, 0]);
-      return;
-    }
-    const values = visibleChoropleth.data.features
-      .map(feature => feature.properties[selectedAttribute])
-      .filter(value => typeof value === 'number'); 
-    
-    if (values.length > 0) {
-      setValueRange([Math.min(...values), Math.max(...values)]);
-    } else {
-      setValueRange([0, 0]);
-    }
-  }, [layers, selectedAttribute]);
-
-  const toggleLayerVisibility = (layerId) => {
-    setLayers(prevLayers =>
-      prevLayers.map(l => {
-        if (l.id === layerId && l.id === 'choropleth-mg') {
-           return { ...l, visible: !l.visible };
-        }
-        if (l.id === layerId) {
-          if (l.type === 'choropleth' && !l.visible) {
-             return { ...l, visible: true }; 
-          }
-          return { ...l, visible: !l.visible };
-        }
-        const clickedLayer = prevLayers.find(c => c.id === layerId);
-        if (l.type === 'choropleth' && clickedLayer && clickedLayer.type === 'choropleth') {
-          return { ...l, visible: false };
-        }
-        return l;
-      })
-      .map((l, _, arr) => {
-         const clickedLayer = arr.find(c => c.id === layerId);
-         if (clickedLayer && clickedLayer.type === 'choropleth' && clickedLayer.id !== 'choropleth-mg') {
-            if (l.id === 'choropleth-mg') return { ...l, visible: false };
-         }
-         if (clickedLayer && clickedLayer.id === 'choropleth-mg' && clickedLayer.visible) {
-            if (l.type === 'choropleth' && l.id !== 'choropleth-mg') return { ...l, visible: false };
-         }
-         return l;
-      })
-    );
-  };
-
-  const handleCloseSidebar = () => {
-    setInfoPaneVisible(false);
-    setSelectedFeatureData(null);
-    setSelectedFeatures({}); 
-  };
-
-  const handlePolygonClick = () => {
-    if (Object.keys(selectedFeatures).length > 0) {
-      setInfoPaneVisible(true);
-    }
-  };
-
-  const handleFeatureClick = (featureData) => {
-    setSelectedFeatureData(featureData);
-    setSelectedFeatures({}); 
-    setInfoPaneVisible(true); 
-  };
-
-  const handleAttributeChange = (event) => {
-    setSelectedAttribute(event.target.value);
-  };
+  const toggleNav = () => setIsNavOpen(!isNavOpen);
 
   return (
-    <div className="app-container">
-      {/* Certifique-se que o Sidebar tem a classe 'sidebar' para o Intro.js encontrá-lo */}
-      <Sidebar
-        layers={layers}
-        attributes={attributes}
-        selectedAttribute={selectedAttribute}
-        onToggleLayer={toggleLayerVisibility}
-        onAttributeChange={handleAttributeChange}
-      />
-      
-      {infoPaneVisible && (
-        <SelectionInfo
-          selectedFeatures={selectedFeatures}
-          featureData={selectedFeatureData}
-          layers={layers}
-          onClose={handleCloseSidebar}
-          recommendations={recommendations}
-        />
-      )}
-      
-      <MapComponent
-        layers={layers}
-        selectedAttribute={selectedAttribute}
-        valueRange={valueRange}
-        onAreaSelect={handleAreaSelect}
-        selectedFeatures={selectedFeatures}
-        onPolygonClick={handlePolygonClick}
-        onFeatureClick={handleFeatureClick}
-      />
+    <nav className="navbar navbar-expand-lg navbar-dark bg-primary sticky-top shadow-sm">
+      <div className="container">
+        <a className="navbar-brand fw-bold d-flex align-items-center" href="#">
+          <Star className="me-2" size={24} />
+          MinhaMarca
+        </a>
+        
+        <button 
+          className="navbar-toggler border-0" 
+          type="button" 
+          onClick={toggleNav}
+          aria-label="Toggle navigation"
+        >
+          {isNavOpen ? <X color="white" /> : <Menu color="white" />}
+        </button>
+
+        <div className={`collapse navbar-collapse ${isNavOpen ? 'show' : ''}`}>
+          <ul className="navbar-nav ms-auto mb-2 mb-lg-0">
+            <li className="nav-item">
+              <a className="nav-link text-white" href="#produto">Nosso Produto</a>
+            </li>
+            <li className="nav-item">
+              <a className="nav-link text-white" href="#sobre">Sobre Nós</a>
+            </li>
+            <li className="nav-item">
+              <a className="nav-link text-white" href="#contato">Contato</a>
+            </li>
+            <li className="nav-item ms-lg-3">
+              <button className="btn btn-light text-primary fw-bold btn-sm mt-1 mt-lg-0">
+                Entrar
+              </button>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+  );
+};
+
+// 2. Componente Hero (Banner Principal com Background de Imagem)
+const Hero = () => {
+  return (
+    <header 
+      className="py-5 mb-5 border-bottom" 
+      style={{ 
+       backgroundImage: `url(${AgroPvIMG})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        position: 'relative'
+      }}
+    >
+      {/* Overlay escuro para melhorar a leitura do texto */}
+      <div 
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          backgroundColor: 'rgba(0, 0, 0, 0.7)', // Ajuste a opacidade aqui
+          zIndex: 1
+        }}
+      ></div>
+
+      <div className="container px-5" style={{ position: 'relative', zIndex: 2 }}>
+        <div className="row gx-5 align-items-center justify-content-center">
+          <div className="col-lg-8 col-xl-7 col-xxl-6">
+            <div className="my-5 text-center text-xl-start">
+              {/* Texto alterado para branco para contrastar com o fundo escuro */}
+              <h1 className="display-5 fw-bolder text-white mb-2">
+           Agro Photovoltaics
+
+              </h1>
+
+            </div>
+          </div>
+        
+        </div>
+      </div>
+    </header>
+  );
+};
+
+// 3. Componente "Nosso Produto"
+const ProductFeatures = () => {
+  const features = [
+    { title: "Análise em Tempo Real", desc: "Dados atualizados instantaneamente para melhor tomada de decisão." },
+    { title: "Interface Intuitiva", desc: "Design focado na experiência do usuário e facilidade de uso." },
+    { title: "Segurança Avançada", desc: "Criptografia de ponta a ponta protegendo seus dados." },
+  ];
+
+  return (
+    <section className="py-5" id="produto">
+      <div className="container px-5 my-5">
+        <div className="row gx-5 justify-content-center">
+          <div className="col-lg-8 col-xl-6">
+            <div className="text-center">
+              <h2 className="fw-bolder">Nosso Produto</h2>
+              <p className="lead fw-normal text-muted mb-5">
+                Feito para escalar o seu negócio com ferramentas poderosas.
+              </p>
+            </div>
+          </div>
+        </div>
+        <div className="row gx-5">
+          {features.map((item, index) => (
+            <div className="col-lg-4 mb-5" key={index}>
+              <div className="card h-100 shadow border-0">
+                <div className="card-body p-4">
+                  <div className="feature bg-primary bg-gradient text-white rounded-3 mb-3 d-inline-flex align-items-center justify-content-center" style={{ width: '50px', height: '50px' }}>
+                    <CheckCircle size={24} />
+                  </div>
+                  <h5 className="card-title fw-bold mt-2">{item.title}</h5>
+                  <p className="card-text text-muted">{item.desc}</p>
+                </div>
+                <div className="card-footer p-4 pt-0 bg-transparent border-top-0">
+                  <div className="d-flex align-items-end justify-content-between">
+                    <div className="d-flex align-items-center">
+                       <small className="text-primary fw-bold" style={{cursor: 'pointer'}}>Ver detalhes <ArrowRight size={14}/></small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+};
+
+// 4. Componente Sobre Nós
+const AboutUs = () => {
+  return (
+    <section className="py-5 bg-light" id="sobre">
+      <div className="container px-5 my-5">
+        <div className="row gx-5 align-items-center">
+          <div className="col-lg-6 order-first order-lg-last">
+            <img 
+              className="img-fluid rounded mb-5 mb-lg-0 shadow" 
+              src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" 
+              alt="Sobre nós" 
+            />
+          </div>
+          <div className="col-lg-6">
+            <h2 className="fw-bolder">Sobre Nossa Missão</h2>
+            <p className="lead fw-normal text-muted mb-4">
+              Fundada em 2023, nossa empresa nasceu com o objetivo de simplificar a complexidade digital.
+            </p>
+            <p className="text-muted">
+              Acreditamos que a tecnologia deve ser uma ponte, não uma barreira. Nossa equipe multidisciplinar trabalha incansavelmente para entregar produtos que não apenas funcionam, mas encantam. Valorizamos a transparência, a colaboração e a excelência técnica em cada linha de código.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+// 5. Componente de Contato
+const Contact = () => {
+  return (
+    <section className="py-5" id="contato">
+      <div className="container px-5">
+        <div className="bg-light rounded-3 py-5 px-4 px-md-5 mb-5 shadow-sm border">
+          <div className="text-center mb-5">
+            <div className="feature bg-primary bg-gradient text-white rounded-3 mb-3 d-inline-flex align-items-center justify-content-center" style={{ width: '50px', height: '50px' }}>
+              <Mail size={24} />
+            </div>
+            <h2 className="fw-bolder">Entre em Contato</h2>
+            <p className="lead fw-normal text-muted mb-0">Adoraríamos ouvir você!</p>
+          </div>
+          <div className="row gx-5 justify-content-center">
+            <div className="col-lg-8 col-xl-6">
+              <form>
+                <div className="form-floating mb-3">
+                  <input className="form-control" id="name" type="text" placeholder="Nome" />
+                  <label htmlFor="name">Nome completo</label>
+                </div>
+                <div className="form-floating mb-3">
+                  <input className="form-control" id="email" type="email" placeholder="name@example.com" />
+                  <label htmlFor="email">Endereço de Email</label>
+                </div>
+                <div className="form-floating mb-3">
+                  <textarea className="form-control" id="message" style={{ height: '10rem' }} placeholder="Mensagem"></textarea>
+                  <label htmlFor="message">Mensagem</label>
+                </div>
+                <div className="d-grid">
+                  <button className="btn btn-primary btn-lg" type="submit">Enviar Mensagem</button>
+                </div>
+              </form>
+            </div>
+          </div>
+          <div className="row mt-5 text-center">
+             <div className="col-md-4 mb-3">
+                <MapPin className="text-primary mb-2" />
+                <p className="text-muted">Av. Paulista, 1000 - SP</p>
+             </div>
+             <div className="col-md-4 mb-3">
+                <Phone className="text-primary mb-2" />
+                <p className="text-muted">(11) 99999-9999</p>
+             </div>
+             <div className="col-md-4 mb-3">
+                <Mail className="text-primary mb-2" />
+                <p className="text-muted">contato@minhamarca.com</p>
+             </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+// 6. Footer
+const Footer = () => {
+  return (
+    <footer className="py-4 bg-dark mt-auto">
+      <div className="container px-5">
+        <div className="row align-items-center justify-content-between flex-column flex-sm-row">
+          <div className="col-auto">
+            <div className="small m-0 text-white">Copyright &copy; MinhaMarca 2024</div>
+          </div>
+          <div className="col-auto">
+            <a className="link-light small" href="#!">Privacidade</a>
+            <span className="text-white mx-1">&middot;</span>
+            <a className="link-light small" href="#!">Termos</a>
+            <span className="text-white mx-1">&middot;</span>
+            <a className="link-light small" href="#!">FAQ</a>
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
+};
+
+// --- Componente Página Inicial (Agrupador) ---
+// Este seria o componente que você "importaria" no seu App principal
+const HomePage = () => {
+  return (
+    <div className="d-flex flex-column min-vh-100">
+      <Navigation />
+      <Hero />
+      <ProductFeatures />
+      <AboutUs />
+      <Contact />
+      <Footer />
     </div>
   );
-}
+};
 
-export default App;
+// --- Componente Principal APP ---
+export default function App() {
+  
+  // Efeito para injetar o Bootstrap CSS dinamicamente
+  // (Isso garante que o Bootstrap funcione neste ambiente de preview)
+  useEffect(() => {
+    const link = document.createElement("link");
+    link.href = "https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css";
+    link.rel = "stylesheet";
+    link.integrity = "sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM";
+    link.crossOrigin = "anonymous";
+    document.head.appendChild(link);
+
+    // Limpeza ao desmontar
+    return () => {
+      document.head.removeChild(link);
+    };
+  }, []);
+
+  return (
+    <HomePage />
+  );
+}

@@ -1,0 +1,254 @@
+/* src/components/styles/Sidebar.css */
+
+.floating-panel {
+  position: absolute;
+  bottom: 20px; /* Troque 'top' por 'bottom' */
+  right: 20px;
+  width: 300px;
+  background-color: rgba(255, 255, 255, 0.95); /* Fundo semi-transparente */
+  backdrop-filter: blur(10px); /* Efeito de vidro fosco */
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  z-index: 2000; /* Garante que fique acima do mapa */
+  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  overflow: hidden; /* Importante para a animação de minimizar */
+}
+
+/* Estado Minimizado */
+.floating-panel.minimized {
+  width: auto; /* Encolhe para o tamanho do conteúdo do header */
+  min-width: 60px;
+  background-color: #ffffff;
+}
+
+.floating-panel.minimized .panel-header {
+  border-bottom: none;
+  padding: 10px;
+}
+
+.floating-panel.minimized .header-title {
+  display: none; /* Esconde o título quando minimizado */
+}
+
+/* Cabeçalho */
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+  background-color: rgba(249, 250, 251, 0.5);
+}
+
+.header-title h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.subtitle {
+  font-size: 11px;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Botão de Minimizar */
+.minimize-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 6px;
+  color: #6b7280;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+}
+
+.minimize-btn:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+  color: #374151;
+}
+
+/* Conteúdo Interno */
+.panel-content {
+  padding: 20px;
+  max-height: 80vh; /* Impede que fique maior que a tela */
+  overflow-y: auto;
+}
+
+.sidebar-section {
+  margin-bottom: 24px;
+}
+
+.sidebar-section:last-child {
+  margin-bottom: 0;
+}
+
+.sidebar-section h3 {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #9ca3af;
+  margin: 0 0 12px 0;
+  font-weight: 600;
+}
+
+/* --- Estilos do Switch e Lista (Mantidos do anterior) --- */
+.layer-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.layer-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.layer-label {
+  font-size: 14px;
+  color: #374151;
+  font-weight: 500;
+}
+
+/* Toggle Switch */
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 40px; /* Levemente menor que o anterior */
+  height: 22px;
+}
+
+.toggle-switch input { opacity: 0; width: 0; height: 0; }
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: #e5e7eb;
+  transition: .3s;
+  border-radius: 34px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 16px; width: 16px;
+  left: 3px; bottom: 3px;
+  background-color: white;
+  transition: .3s;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+input:checked + .slider { background-color: #3b82f6; } /* Azul agradável */
+input:checked + .slider:before { transform: translateX(18px); }
+
+/* --- Select Style --- */
+.select-wrapper { position: relative; }
+.select-wrapper::after {
+  content: "▼";
+  font-size: 10px;
+  color: #6b7280;
+  position: absolute;
+  right: 12px; top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.modern-select {
+  width: 100%;
+  padding: 10px 12px;
+  padding-right: 30px;
+  font-size: 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background-color: #fff;
+  color: #374151;
+  appearance: none;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.modern-select:hover { border-color: #9ca3af; }
+.modern-select:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+/* Card de Resultados da Simulação */
+.simulation-result-card {
+  margin-top: 15px;
+  background-color: #f0fdf4; /* Verde bem claro */
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+  padding: 15px;
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.result-title {
+  margin: 0 0 12px 0;
+  font-size: 13px;
+  color: #15803d; /* Verde escuro */
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.result-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 16px;
+}
+
+.result-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.result-item.highlight .result-value {
+  color: #16a34a; /* Verde destaque */
+  font-weight: 800;
+}
+
+.result-label {
+  font-size: 11px;
+  color: #64748b;
+  margin-bottom: 2px;
+}
+
+.result-value {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.result-value small {
+  font-size: 11px;
+  color: #94a3b8;
+  font-weight: 500;
+  margin-left: 2px;
+}
+
+.disclaimer {
+  margin: 12px 0 0 0;
+  font-size: 9px;
+  color: #94a3b8;
+  font-style: italic;
+  line-height: 1.3;
+}

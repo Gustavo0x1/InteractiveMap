@@ -160,7 +160,7 @@ function MapComponent({ layers, selectedAttribute, valueRange, onAreaSelect, sel
 
   return (
     <div className="map-wrapper">
-      <MapContainer center={[-18.91, -44.55]} zoom={6} style={{ height: '100%', width: '100%' }} preferCanvas={true}>
+      <MapContainer center={[-18.91, -44.55]} zoom={6} zoomControl={false} style={{ height: '100%', width: '100%' }} preferCanvas={true}>
 
          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution='&copy; OpenStreetMap' />
 

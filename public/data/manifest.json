@@ -2,22 +2,13 @@
   "layers": [
     {
       "id": "pecuaria-csv",
-      "name": "Pecuária (CSV)",
+      "name": "Pecuária",
       "path": "/data/dados_pecuaria.csv"
     },
       {
       "id": "Agricultura-curtoPrazo",
-      "name": "Curto Prazo (CSV)",
+      "name": "Agricultura (Curto Prazo)",
       "path": "/data/Agricultura_curtoPrazo.csv"
-    },
-    {
-      "id": "camada-circulos-interesse",
-      "name": "Pontos (Círculos)",
-      "type": "point_circle",
-      "path": "/pontos_interesse.geojson",
-      "visible": true,
-      "color": "#00FF00",
-      "radius": 8
     },
     {
       "id": "camada-cooperativas",

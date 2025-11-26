@@ -1,24 +1,17 @@
+// src/components/SelectionInfo.jsx
 import React, { useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell } from 'recharts';
 import introJs from 'intro.js';
 import 'intro.js/introjs.css';
 import './styles/SelectionInfo.css';
 
-
-// Lista de propriedades a ignorar
+// --- CONFIGURAÇÕES CONSTANTES ---
 const IGNORE_PROPS = [
-  'id', 'name', 'description', 'ID', 'LAT', 'LON', 'municipios', 
-  'icon_url', 'icon_size', 'icon_anchor', 'TOTAL', 'Total'
-];
-
-const FIXED_ORDER = [
-    'UF', 'ANNUAL', 
-    'JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN',
-    'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'
+  'id', 'name', 'description', 'descrição', 'descricao', 'ID', 'LAT', 'LON', 'municipios', 
+  'icon_url', 'icon_size', 'icon_anchor', 'TOTAL', 'Total', 'titulo'
 ];
 
 const MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
-
 const TRANSLATIONS = {
     'JAN': 'Janeiro', 'FEB': 'Fevereiro', 'MAR': 'Março', 'APR': 'Abril',
     'MAY': 'Maio', 'JUN': 'Junho', 'JUL': 'Julho', 'AUG': 'Agosto',
@@ -35,7 +28,6 @@ const formatLabel = (label) => {
 const ColumnChart = ({ properties, layerName }) => {
     let data = Object.entries(properties).map(([key, value]) => {
         if (IGNORE_PROPS.includes(key) || IGNORE_PROPS.includes(key.toUpperCase())) return null;
-
         let numericValue = 0;
         let label = key;
         
@@ -46,13 +38,11 @@ const ColumnChart = ({ properties, layerName }) => {
         } else {
             return null;
         }
-
         return { name: label, value: numericValue };
     }).filter(item => item !== null);
 
     if (data.length === 0) return null;
 
-    // Lógica para definir o Título do Gráfico
     const hasMonths = data.some(d => MONTHS.includes(d.name.toUpperCase()));
     let chartTitle = "";
 
@@ -62,72 +52,104 @@ const ColumnChart = ({ properties, layerName }) => {
             const idxB = MONTHS.indexOf(b.name.toUpperCase());
             return (idxA === -1 ? 999 : idxA) - (idxB === -1 ? 999 : idxB);
         });
-        chartTitle = `Variação Mensal - ${layerName}`;
+        chartTitle = `Variação Mensal`;
     } else {
         data.sort((a, b) => b.value - a.value);
         data = data.slice(0, 15);
-        chartTitle = `Ranking (Top 15) - ${layerName}`;
+        chartTitle = `Ranking (Top 15)`;
     }
 
     return (
-        <div className="chart-container" style={{ height: 320, width: '100%', marginTop: 20, marginBottom: 30 }}>
-            <h5 style={{ textAlign: 'center', color: '#666', marginBottom: 10, fontSize: '0.9rem' }}>
-                {chartTitle}
-            </h5>
-            <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={data} margin={{ top: 5, right: 30, left: 0, bottom: 60 }}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#eee" />
-                    <XAxis dataKey="name" interval={0} angle={-45} textAnchor="end" tick={{ fontSize: 11, fill: '#555' }} height={60} tickFormatter={formatLabel} />
-                    <YAxis tick={{ fontSize: 11, fill: '#555' }} tickFormatter={(value) => value >= 1000 ? `${(value/1000).toFixed(0)}k` : value} />
-                    <Tooltip cursor={{ fill: 'rgba(0,0,0,0.05)' }} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }} formatter={(value) => [value.toLocaleString('pt-BR'), 'Valor']} labelFormatter={formatLabel} />
-                    <Bar dataKey="value" radius={[4, 4, 0, 0]}>
-                        {data.map((entry, index) => <Cell key={`cell-${index}`} fill="#4a90e2" />)}
-                    </Bar>
-                </BarChart>
-            </ResponsiveContainer>
+        <div className="chart-wrapper">
+            <h5 className="chart-title">{chartTitle}</h5>
+            <div style={{ height: 280, width: '100%' }}>
+                <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={data} margin={{ top: 10, right: 5, left: -20, bottom: 0 }}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                        <XAxis 
+                            dataKey="name" 
+                            interval={0} 
+                            angle={-90} 
+                            textAnchor="end" 
+                            height={110} 
+                            tick={{ fontSize: 10, fill: '#666', dy: 3 }} 
+                            tickFormatter={formatLabel} 
+                        />
+                        <YAxis tick={{ fontSize: 10, fill: '#888' }} tickFormatter={(val) => val >= 1000 ? `${(val/1000).toFixed(0)}k` : val} />
+                        <Tooltip 
+                            cursor={{ fill: 'rgba(0,0,0,0.02)' }}
+                            contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}
+                            formatter={(value) => [value.toLocaleString('pt-BR'), 'Valor']}
+                            labelFormatter={formatLabel}
+                        />
+                        <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                            {data.map((entry, index) => <Cell key={`cell-${index}`} fill="#3b82f6" />)}
+                        </Bar>
+                    </BarChart>
+                </ResponsiveContainer>
+            </div>
         </div>
     );
 };
 
-// --- RENDERIZAÇÃO DAS PROPRIEDADES (TABELA) ---
-const renderProperty = (key, value, calculationType) => {
-    const displayKey = formatLabel(key);
+// --- SUB-COMPONENTE PARA ITEM EXPANSÍVEL ---
+const FeatureItem = ({ feature, layerName }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const properties = feature.properties;
+    const name = properties.name || properties.Name || properties.Nome || properties.titulo || "Sem Nome";
+    const description = properties.description || properties.Description || properties.descrição || properties.descricao;
 
-    if (typeof value === 'object' && value !== null && value.hasOwnProperty('value') && value.hasOwnProperty('location')) {
-        const numericValue = value.value;
-        const formattedValue = Number.isInteger(numericValue) ? numericValue : numericValue.toFixed(2);
-        return (
-            <div key={key} className="feature-detail-item feature-max-item" style={{ flexDirection: 'column', alignItems: 'flex-start', borderBottom: '1px solid #eee', paddingBottom: '8px', marginBottom: '8px' }}>
-                <div style={{ fontSize: '0.9em', color: '#555' }}>
-                    Município destaque: <strong style={{ color: '#000' }}>{value.location}</strong>
+    return (
+        <div className={`feature-card ${isOpen ? 'expanded' : ''}`} onClick={() => setIsOpen(!isOpen)}>
+            <div className="feature-header">
+                <div className="feature-title-group">
+                    <strong>{name}</strong>
+                    <span className="feature-layer-tag">{layerName}</span>
                 </div>
-                <div style={{ fontSize: '0.9em', color: '#555' }}>
-                    Total: <strong>{formattedValue}</strong>
+                <span className="toggle-icon">{isOpen ? '−' : '+'}</span>
+            </div>
+
+            {isOpen && (
+                <div className="feature-body" onClick={(e) => e.stopPropagation()}>
+                    {description && (
+                        <div className="feature-description">
+                            <strong>Descrição:</strong>
+                            <p>{description}</p>
+                        </div>
+                    )}
+                    <div className="feature-grid">
+                        {Object.entries(properties).map(([key, value]) => {
+                            if (IGNORE_PROPS.includes(key) || IGNORE_PROPS.includes(key.toLowerCase())) return null;
+                            return (
+                                <div key={key} className="grid-item">
+                                    <span className="grid-key">{formatLabel(key)}:</span>
+                                    <span className="grid-value">{typeof value === 'number' ? value.toFixed(2) : String(value)}</span>
+                                </div>
+                            );
+                        })}
+                    </div>
                 </div>
-            </div>
-        );
-    } else if (typeof value === 'number') {
-        const displayValue = Number.isInteger(value) ? value : value.toFixed(2);
-        return (
-            <div key={key} className="feature-detail-item">
-                <strong>{displayKey}:</strong>
-                <span>{displayValue}</span>
-            </div>
-        );
-    } else {
-        return (
-            <div key={key} className="feature-detail-item">
-                <strong>{displayKey}:</strong>
-                <span>{String(value)}</span>
-            </div>
-        );
-    }
+            )}
+        </div>
+    );
 };
 
+// --- FUNÇÕES AUXILIARES DE CÁLCULO (CORRIGIDA) ---
+// Restaurei a lista completa de palavras-chave para garantir que safras específicas ativem o modo MAX/Destaque
 const isMaxAggregation = (layerName) => {
     if (!layerName) return false;
     const normalizedName = layerName.toLowerCase();
-    return normalizedName.includes('cultivo') || normalizedName.includes('cultura') || normalizedName.includes('pecuária') || normalizedName.includes('produção') || normalizedName.includes('milho') || normalizedName.includes('soja') || normalizedName.includes('feijao') || normalizedName.includes('cafe') || normalizedName.includes('banana') || normalizedName.includes('dados') || normalizedName.includes('csv');
+    return normalizedName.includes('cultivo') || 
+           normalizedName.includes('cultura') || 
+           normalizedName.includes('pecuária') || 
+           normalizedName.includes('produção') || 
+           normalizedName.includes('milho') || 
+           normalizedName.includes('soja') || 
+           normalizedName.includes('feijao') || 
+           normalizedName.includes('cafe') || 
+           normalizedName.includes('banana') || 
+           normalizedName.includes('dados') || 
+           normalizedName.includes('csv');
 }
 
 const calculateMetricsForFeatures = (features, operation = 'AVERAGE') => {
@@ -168,94 +190,157 @@ const calculateMetricsForFeatures = (features, operation = 'AVERAGE') => {
         if (totalFeatures === 1) {
             Object.assign(finalMetrics, metrics);
         } else {
-            Object.entries(metrics).forEach(([key, sum]) => {
-                finalMetrics[key] = sum / totalFeatures;
-            });
+            Object.entries(metrics).forEach(([key, sum]) => finalMetrics[key] = sum / totalFeatures);
         }
-    } else if (operation === 'MAX') {
+    } else {
         Object.assign(finalMetrics, metrics);
     }
 
-    const combinedResult = { ...commonProps, ...finalMetrics };
-    const sortedResult = {};
-    const addedKeys = new Set();
-    
-    FIXED_ORDER.forEach(key => {
-        if (combinedResult.hasOwnProperty(key)) {
-            sortedResult[key] = combinedResult[key];
-            addedKeys.add(key);
-        }
-    });
-
-    Object.keys(combinedResult)
-        .filter(key => !addedKeys.has(key))
-        .sort()
-        .forEach(key => {
-            sortedResult[key] = combinedResult[key];
-        });
-
     return {
         count: totalFeatures,
-        properties: sortedResult,
-        calculationType: operation === 'MAX' ? 'Destaques (Maior Valor Encontrado)' : 'Média'
+        properties: { ...commonProps, ...finalMetrics },
+        calculationType: operation === 'MAX' ? 'Destaques' : 'Média'
     };
 };
 
+// --- COMPONENTE DE RESULTADOS DA SIMULAÇÃO ---
+const SimulationResults = ({ inputs, layers }) => {
+    const irradiationLayer = layers.find(l => 
+        l.properties && (l.properties.ANNUAL !== undefined || l.properties.JAN !== undefined)
+    );
+
+    if (!irradiationLayer) return null;
+
+    const annualIrrad = irradiationLayer.properties.ANNUAL || 0;
+    const systemPowerKW = (inputs.count * inputs.power) / 1000; 
+    const usefulPanelArea = inputs.width * inputs.height;
+    
+    // Cálculo com Espaçamento
+    const effectiveWidth = inputs.width; 
+    const effectiveHeight = inputs.height + inputs.spacing; 
+    const totalOccupiedArea = inputs.count * effectiveWidth * effectiveHeight; 
+    
+    const efficiencyFactor = 0.75; 
+    const dailyIrradKWh = annualIrrad / 1000;
+
+    const dailyGeneration = systemPowerKW * dailyIrradKWh * efficiencyFactor;
+    const monthlyGeneration = dailyGeneration * 30;
+    const annualGeneration = dailyGeneration * 365;
+    const moduleEfficiency = (inputs.power / (usefulPanelArea * 1000)) * 100;
+
+    return (
+        <div className="simulation-result-card">
+            <h5 className="result-title">⚡ Potencial de Geração Estimado</h5>
+            <div className="result-grid">
+                <div className="result-item">
+                    <span className="result-label">Capacidade do Sistema</span>
+                    <span className="result-value">{systemPowerKW.toFixed(2)} <small>kWp</small></span>
+                </div>
+                <div className="result-item highlight">
+                    <span className="result-label">Geração Média Mensal</span>
+                    <span className="result-value">{monthlyGeneration.toFixed(0)} <small>kWh</small></span>
+                </div>
+                <div className="result-item">
+                    <span className="result-label">Área de Ocupação</span>
+                    <span className="result-value">{totalOccupiedArea.toFixed(1)} <small>m²</small></span>
+                </div>
+                <div className="result-item">
+                    <span className="result-label">Eficiência do Painel</span>
+                    <span className="result-value" style={{ color: moduleEfficiency > 23 || moduleEfficiency < 15 ? '#d97706' : '#64748b' }}>
+                        {moduleEfficiency.toFixed(1)}%
+                    </span>
+                </div>
+                <div className="result-item">
+                    <span className="result-label">Geração Anual</span>
+                    <span className="result-value">{(annualGeneration/1000).toFixed(2)} <small>MWh</small></span>
+                </div>
+            </div>
+            <p className="disclaimer">
+                *Área considera espaçamento entre fileiras de {inputs.spacing}m. Geração baseada na irradiação local ({dailyIrradKWh.toFixed(2)} kWh/m²/dia).
+            </p>
+        </div>
+    );
+};
+
+
 function SelectionInfo({ selectedFeatures, featureData, layers, onClose, recommendations }) {
+  const [isMinimized, setIsMinimized] = useState(false);
   
-  // --- TUTORIAL INTRO.JS (NOVO) ---
+  const [panelInputs, setPanelInputs] = useState({
+      count: 100,
+      width: 1.1,
+      height: 2.3,
+      power: 550,
+      spacing: 1.5 
+  });
+
+  const handleInputChange = (e) => {
+      const { name, value } = e.target;
+      const numValue = parseFloat(value);
+      setPanelInputs(prev => ({ ...prev, [name]: isNaN(numValue) ? 0 : numValue }));
+  };
+
   useEffect(() => {
-    // Usamos setTimeout para garantir que o React terminou de renderizar os elementos do DOM
     const timer = setTimeout(() => {
-        // Verifica se estamos no modo de Relatório de Área
         if (selectedFeatures && Object.keys(selectedFeatures).length > 0) {
             
-            // Definimos passos potenciais
-            const possibleSteps = [
+            const steps = [
                 {
-                    element: '.selection-info',
-                    title: 'Relatório de Inteligência',
-                    intro: 'Este painel consolida os dados de todas as camadas que interceptam a área que você desenhou.',
-                    position: 'left'
+                    element: '.info-panel-floating',
+                    intro: 'Este é o <b>Relatório de Inteligência</b>. Aqui consolidamos todos os dados da área que você selecionou no mapa.',
+                    position: 'right'
                 },
                 {
-                    element: '.insight-box', // Só existe se houver recomendação/diagnóstico
-                    title: 'Diagnóstico Inteligente',
-                    intro: 'O sistema identificou um polo produtor aqui! Veja as recomendações de tecnologia e irrigação.',
-                    position: 'left'
+                    element: '.input-section',
+                    intro: '<b>Simulador Solar:</b> Ajuste a quantidade, potência e dimensões dos painéis para simular um projeto fotovoltaico nesta região.',
+                    position: 'right'
                 },
                 {
-                    element: '.chart-container', // Só existe se houver dados numéricos para gráfico
-                    title: 'Visualização de Dados',
-                    intro: 'Acompanhe as médias ou totais de produção/irradiação através destes gráficos.',
-                    position: 'left'
-                },
-                {
-                    element: '.selection-info-pane', // Para listas de associações
-                    title: 'Associações e Pontos',
-                    intro: 'Aqui estão listadas as cooperativas ou pontos de interesse encontrados dentro da área.',
-                    position: 'left'
+                    element: '.simulation-result-card',
+                    intro: '<b>Resultados em Tempo Real:</b> Veja a estimativa de geração de energia e área necessária baseada nos dados climáticos locais.',
+                    position: 'right'
                 }
             ];
 
-            // Filtramos apenas os passos cujos elementos REALMENTE existem na tela agora
-            const activeSteps = possibleSteps.filter(step => document.querySelector(step.element));
-
-            if (activeSteps.length > 0) {
-                introJs().setOptions({
-                    steps: activeSteps,
-                    showProgress: true,
-                    showBullets: false,
-                    nextLabel: 'Próximo',
-                    prevLabel: 'Anterior',
-                    doneLabel: 'Entendi'
-                }).start();
+            if (document.querySelector('.insight-card')) {
+                steps.push({
+                    element: '.insight-card',
+                    intro: '<b>Diagnóstico Inteligente:</b> O sistema identificou um potencial produtivo aqui! Veja as recomendações sugeridas.',
+                    position: 'left'
+                });
             }
-        }
-    }, 800); // Espera um pouco para garantir que a transição/renderização acabou
 
+            if (document.querySelector('.chart-wrapper')) {
+                steps.push({
+                    element: '.chart-wrapper',
+                    intro: 'Visualize os dados climáticos e produtivos através destes gráficos interativos.',
+                    position: 'left'
+                });
+            }
+
+            if (document.querySelector('.features-container')) {
+                steps.push({
+                    element: '.features-container',
+                    intro: 'Aqui estão as <b>Cooperativas e Pontos de Interesse</b> encontrados dentro da área selecionada. Clique neles para ver detalhes.',
+                    position: 'left'
+                });
+            }
+
+            introJs().setOptions({
+                steps: steps,
+                showProgress: true,
+                showBullets: false,
+                nextLabel: 'Próximo',
+                prevLabel: 'Anterior',
+                doneLabel: 'Entendi',
+                exitOnOverlayClick: false,
+                scrollToElement: true
+            }).start();
+        }
+    }, 1000); 
+    
     return () => clearTimeout(timer);
-  }, [selectedFeatures]); // Recarrega se as feições mudarem (ex: usuário desenhar outro polígono)
+  }, [selectedFeatures]); 
 
 
   const getLayerName = (layerId) => {
@@ -263,255 +348,176 @@ function SelectionInfo({ selectedFeatures, featureData, layers, onClose, recomme
     return layer ? layer.name : layerId;
   };
 
-  // MODO 1: Feature Individual
-  if (featureData) {
-    const title = featureData.name || 'Informações da Feição';
-    const renderFeatureDetails = () => {
-      return Object.entries(featureData).map(([key, value]) => {
-        if (!IGNORE_PROPS.includes(key) && !IGNORE_PROPS.includes(key.toUpperCase())) {
-          return renderProperty(key, value, 'INDIVIDUAL');
-        }
-        return null;
+  const isAreaSelection = selectedFeatures && Object.keys(selectedFeatures).length > 0;
+  const isFeatureSelection = !!featureData;
+
+  if (!isAreaSelection && !isFeatureSelection) return null;
+
+  const title = isAreaSelection ? "Relatório de Inteligência" : (featureData.name || "Informações");
+  const subtitle = isAreaSelection ? "Análise de Área" : "Detalhes da Feição";
+
+  let content = null;
+  
+  if (isAreaSelection) {
+      const layerTypeMap = new Map(layers.map(l => [l.id, l.type]));
+      const aggregatedLayers = [];
+      const otherFeatures = [];
+
+      Object.entries(selectedFeatures).forEach(([layerId, features]) => {
+          const layerType = layerTypeMap.get(layerId);
+          const layerName = getLayerName(layerId);
+          
+          if (layerType === 'choropleth') {
+              // Garante que a operação será MAX se for uma camada de cultivo/produção
+              const operation = isMaxAggregation(layerName) ? 'MAX' : 'AVERAGE';
+              const data = calculateMetricsForFeatures(features, operation);
+              if (data.count > 0) aggregatedLayers.push({ id: layerId, name: layerName, ...data });
+          } else {
+              otherFeatures.push({ id: layerId, name: layerName, features: features });
+          }
       });
-    };
 
-    return (
-      <div className="selection-info area-select-info">
-        <div className="selection-info-header">
-          <h3>{title}</h3>
-          <button onClick={onClose} className="close-button">&times;</button>
-        </div>
-        <div className="selection-info-content">
-          <div className="feature-details-list">
-            {renderFeatureDetails()}
-          </div>
-        </div>
-      </div>
-    );
-  }
+      // LÓGICA DE DIAGNÓSTICO (RESTAURADA)
+      let diagnosisBlock = null;
+      for (const layer of aggregatedLayers) {
+          // Verifica se a camada foi marcada como Destaques (MAX)
+          if (layer.calculationType === 'Destaques') {
+              let maxKey = null;
+              let maxVal = -Infinity;
+              let maxLocation = "";
 
-  // MODO 2: Seleção de Área (Polígono)
-  if (selectedFeatures && Object.keys(selectedFeatures).length > 0) {
-    
-    const layerTypeMap = new Map(layers.map(l => [l.id, l.type]));
-    const aggregatedLayers = [];
-    const otherFeatures = [];
-    
-    Object.entries(selectedFeatures).forEach(([layerId, features]) => {
-        const layerType = layerTypeMap.get(layerId);
-        const layerName = getLayerName(layerId);
-        
-        if (layerType === 'choropleth') {
-            const operation = isMaxAggregation(layerName) ? 'MAX' : 'AVERAGE';
-            const data = calculateMetricsForFeatures(features, operation);
-            if (data.count > 0) {
-                aggregatedLayers.push({
-                    id: layerId,
-                    name: layerName,
-                    ...data,
-                });
-            }
-        } else {
-            otherFeatures.push({ id: layerId, name: layerName, features: features });
-        }
-    });
-
-    const hasData = aggregatedLayers.length > 0 || otherFeatures.length > 0;
-    
-    if (!hasData) {
-         return (
-            <div className="selection-info area-select-info">
-                <div className="selection-info-header">
-                    <h3>Seleção de Área</h3>
-                    <button onClick={onClose} className="close-button">&times;</button>
-                </div>
-                <div className="selection-info-content">
-                    <p>Nenhuma feição encontrada na área selecionada.</p>
-                </div>
-            </div>
-        );
-    }
-    
-    let diagnosisBlock = null;
-    for (const layer of aggregatedLayers) {
-        if (layer.calculationType.includes('Destaque')) {
-            let maxKey = null;
-            let maxVal = -Infinity;
-            let maxLocation = "";
-
-            Object.entries(layer.properties).forEach(([key, data]) => {
-                if (data && typeof data.value === 'number') {
-                    if (data.value > maxVal) {
-                        maxVal = data.value;
-                        maxKey = key; 
-                        maxLocation = data.location;
-                    }
-                }
-            });
-
-            if (maxKey && recommendations) {
-                let recData = recommendations[maxKey] || recommendations[maxKey.toUpperCase()];
-                if (!recData) {
-                    const quotedKey = `"${maxKey}"`;
-                    recData = recommendations[quotedKey];
-                }
-
-                if (recData) {
-                    diagnosisBlock = (
-                        <div className="insight-box" style={{ 
-                            backgroundColor: '#f0f8ff', 
-                            borderLeft: '4px solid #007bff', 
-                            padding: '10px', 
-                            marginBottom: '20px',
-                            borderRadius: '4px'
-                        }}>
-                            <h4 style={{marginTop:0, color:'#0056b3'}}>Diagnóstico da Região</h4>
-                            <p style={{fontSize: '0.95rem', lineHeight: '1.5'}}>
-                                Foi encontrado na região marcada um polo produtor de <strong>{formatLabel(maxKey)}</strong> (destaque para {maxLocation}).
-                            </p>
-                            <p style={{fontSize: '0.95rem', lineHeight: '1.5', marginTop: '8px'}}>
-                                Recomendamos o uso de <strong>{recData.PainelRecomendado}</strong> e a instalação de sistema de <strong>{recData.IrrigacaoRecomendada}</strong>.
-                            </p>
-                        </div>
-                    );
-                    break;
-                }
-            }
-        }
-    }
-
-    // --- ACHATAMENTO (FLATTENING) DAS FEIÇÕES ---
-    // Criamos uma lista única com todas as feições de 'otherFeatures'
-    const flatOtherFeatures = [];
-    otherFeatures.forEach(layer => {
-        layer.features.forEach(feature => {
-            flatOtherFeatures.push({
-                ...feature,
-                _layerName: layer.name // Guardamos o nome da camada caso precise, mas não vamos exibir o agrupamento
-            });
-        });
-    });
-
-    const getFeatureProperties = (properties) => {
-        const nameKey = Object.keys(properties).find(k => k.toLowerCase() === 'titulo' || k.toLowerCase() === 'titulo');
-        const nameValue = nameKey ? properties[nameKey] : null;
-
-        const descKey = Object.keys(properties).find(k => k.toLowerCase() === 'description' || k.toLowerCase() === 'descrição' || k.toLowerCase() === 'descricao');
-        const descValue = descKey ? properties[descKey] : null;
-
-        return (
-            <div className="feature-custom-layout" style={{ marginTop: '5px' }}>
-                {nameValue ? (
-                    <h4 style={{ margin: '0 0 8px 0', color: '#007bff', fontSize: '1.1rem', borderBottom: '1px solid #eee', paddingBottom: '4px' }}>
-                        {nameValue}
-                    </h4>
-                ) : (
-                    <h4 style={{ margin: '0 0 8px 0', color: '#999', fontSize: '1rem', fontStyle: 'italic' }}>(Sem Nome)</h4>
-                )}
-
-                <div className="feature-description-block" style={{ marginBottom: '12px', fontSize: '0.9rem', lineHeight: '1.4', color: '#444', backgroundColor: '#fafafa', padding: '8px', borderRadius: '4px' }}>
-                    <strong style={{ display: 'block', marginBottom: '4px', color: '#333', fontSize: '0.85rem', textTransform: 'uppercase' }}>Descrição:</strong>
-                    {descValue ? (
-                        <span>{descValue}</span>
-                    ) : (
-                        <span style={{ color: '#aaa', fontStyle: 'italic' }}>Nenhuma descrição disponível.</span>
-                    )}
-                </div>
-
-                <div className="feature-others-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 15px' }}>
-                    {Object.entries(properties).map(([key, value]) => {
-                        if (
-                            key.toLowerCase() === 'name' || key.toLowerCase() === 'nome' ||
-                            key.toLowerCase() === 'description' || key.toLowerCase() === 'descrição' || key.toLowerCase() === 'descricao' ||
-                            IGNORE_PROPS.includes(key) || IGNORE_PROPS.includes(key.toUpperCase())
-                        ) {
-                            return null;
-                        }
-                        return (
-                            <div key={key} className="feature-property-item" style={{ borderBottom: '1px dotted #eee', paddingBottom: '2px' }}>
-                                <span className="info-key" style={{ fontWeight: 'bold', color: '#555', fontSize: '0.85rem' }}>{formatLabel(key)}:</span>
-                                <span className="info-value" style={{ marginLeft: '5px', fontSize: '0.9rem' }}>{typeof value === 'number' ? value.toFixed(2) : String(value)}</span>
-                            </div>
-                        );
-                    })}
-                </div>
-            </div>
-        );
-    };
-
-    return (
-      <div className="selection-info area-select-info">
-        <div className="selection-info-header">
-          <h3>Relatório de Inteligência</h3>
-          <button onClick={onClose} className="close-button">&times;</button>
-        </div>
-        
-        <div className="selection-info-content">
-          
-          {diagnosisBlock}
-
-
-
-          <hr/>
-          
-          {aggregatedLayers.length > 0 && (
-              <>
-                  {aggregatedLayers.map(layer => {
-                      let maxKey = null;
-                      let maxVal = -Infinity;
-                      if (layer.calculationType.includes('Destaque')) {
-                          Object.entries(layer.properties).forEach(([key, data]) => {
-                              if (data && typeof data.value === 'number') {
-                                  if (data.value > maxVal) {
-                                      maxVal = data.value;
-                                      maxKey = key; 
-                                  }
-                              }
-                          });
+              // Encontra o maior valor dentro dessa camada
+              Object.entries(layer.properties).forEach(([key, data]) => {
+                  if (data && typeof data.value === 'number') {
+                      if (data.value > maxVal) {
+                          maxVal = data.value;
+                          maxKey = key; 
+                          maxLocation = data.location; // Recupera a cidade
                       }
+                  }
+              });
 
-                      const cardTitle = (layer.calculationType.includes('Destaque') && maxKey) 
-                          ? formatLabel(maxKey) 
-                          : layer.name;
-
-                      return (
-                          <div key={layer.id} className="layer-average-block">
-                              
-                              <div className="layer-block-header">
-                                  <h5>{cardTitle}</h5>
+              // Se achou um destaque, procura no recommendation.csv
+              if (maxKey && recommendations) {
+                  let rec = recommendations[maxKey] || recommendations[maxKey.toUpperCase()];
+                  if (!rec) rec = recommendations[`"${maxKey}"`];
+                  
+                  if (rec) {
+                      diagnosisBlock = (
+                          <div className="insight-card">
+                              <div className="insight-icon">💡</div>
+                              <div className="insight-content">
+                                  <h4>Diagnóstico: Polo de {formatLabel(maxKey)}</h4>
+                                  <p>Foi identificado um polo produtor nesta região, com destaque para <strong>{maxLocation}</strong>.</p>
+                                  <div className="insight-tags">
+                                      <span className="tag">Recomendação: {rec.PainelRecomendado}</span>
+                                      <span className="tag">Irrigação: {rec.IrrigacaoRecomendada}</span>
+                                  </div>
                               </div>
-
-                              <ColumnChart properties={layer.properties} layerName={layer.name} />
-
-                        
                           </div>
                       );
-                  })}
-              </>
-          )}
+                      // Para no primeiro diagnóstico encontrado para não poluir
+                      break;
+                  }
+              }
+          }
+      }
 
+      content = (
+          <>
+              {/* Renderiza o Diagnóstico no topo, se existir */}
+              {diagnosisBlock}
+              
+              <div className="section-block input-section">
+                  <h4 className="section-title">Simulação Fotovoltaica</h4>
+                  <div className="input-grid">
+                      <div className="input-group">
+                          <label>Qtd. Painéis</label>
+                          <input type="number" name="count" value={panelInputs.count} onChange={handleInputChange} className="modern-input"/>
+                      </div>
+                      <div className="input-group">
+                          <label>Potência (W)</label>
+                          <input type="number" name="power" value={panelInputs.power} onChange={handleInputChange} className="modern-input"/>
+                      </div>
+                      <div className="input-group">
+                          <label>Largura (m)</label>
+                          <input type="number" name="width" value={panelInputs.width} onChange={handleInputChange} step="0.1" className="modern-input"/>
+                      </div>
+                      <div className="input-group">
+                          <label>Altura (m)</label>
+                          <input type="number" name="height" value={panelInputs.height} onChange={handleInputChange} step="0.1" className="modern-input"/>
+                      </div>
+                      <div className="input-group" style={{ gridColumn: '1 / -1' }}>
+                          <label>Distância entre Fileiras (m)</label>
+                          <input type="number" name="spacing" value={panelInputs.spacing} onChange={handleInputChange} step="0.1" className="modern-input"/>
+                      </div>
+                  </div>
+                  
+                  <SimulationResults inputs={panelInputs} layers={aggregatedLayers} />
+              </div>
 
-          {flatOtherFeatures.length > 0 && (
-              <>
-                  <hr/>
-                  <h4 >Associações na região</h4>
-                  <ul className='associacoes_intro' style={{ listStyle: 'none', padding: 0 }}>
-                    {flatOtherFeatures.map((feature, index) => (
-                       
-                      <li key={`${feature._layerName}-${index}`} style={{ marginBottom: '20px', border: '1px solid #e0e0e0', borderRadius: '6px', padding: '10px', backgroundColor: '#fff' }}>
-                        <div className="feature-properties">
-                          {getFeatureProperties(feature.properties)}
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-              </>
-          )}
-        </div>
-      </div>
-    );
+              {aggregatedLayers.map(layer => (
+                  <div key={layer.id} className="section-block">
+                      <h4 className="section-title">{layer.name} <span className="badge">{layer.calculationType}</span></h4>
+                      <ColumnChart properties={layer.properties} layerName={layer.name} />
+                  </div>
+              ))}
+
+              {otherFeatures.length > 0 && (
+                  <div className="section-block">
+                      <h4 className="section-title">Pontos de Interesse / Cooperativas</h4>
+                      <div className="features-container">
+                          {otherFeatures.map(layer => (
+                              layer.features.map((feature, index) => (
+                                  <FeatureItem 
+                                      key={`${layer.id}-${index}`} 
+                                      feature={feature} 
+                                      layerName={layer.name} 
+                                  />
+                              ))
+                          ))}
+                      </div>
+                  </div>
+              )}
+          </>
+      );
+  } else {
+      content = (
+          <div className="feature-details-list">
+              {Object.entries(featureData).map(([key, value]) => {
+                   if (IGNORE_PROPS.includes(key)) return null;
+                   return (
+                       <div key={key} className="detail-row">
+                           <span className="detail-key">{formatLabel(key)}</span>
+                           <span className="detail-value">{typeof value === 'number' ? value.toFixed(2) : String(value)}</span>
+                       </div>
+                   )
+              })}
+          </div>
+      )
   }
 
-  return null;
+  return (
+    <div className={`info-panel-floating ${isMinimized ? 'minimized' : ''}`}>
+        <div className="panel-header">
+            <div className="header-info">
+                <h2>{title}</h2>
+                {!isMinimized && <span className="header-subtitle">{subtitle}</span>}
+            </div>
+            <div className="header-actions">
+                <button className="icon-btn" onClick={() => setIsMinimized(!isMinimized)} title={isMinimized ? "Expandir" : "Minimizar"}>
+                   {isMinimized ? '⤢' : '—'}
+                </button>
+                <button className="icon-btn close-btn" onClick={onClose} title="Fechar">×</button>
+            </div>
+        </div>
+        {!isMinimized && (
+            <div className="panel-scroll-content">
+                {content}
+            </div>
+        )}
+    </div>
+  );
 }
+
 export default SelectionInfo;

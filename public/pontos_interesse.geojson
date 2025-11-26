@@ -1,0 +1,10 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    { 
+      "type": "Feature", 
+      "properties": { "name": "Ponto de Interesse BH" }, 
+      "geometry": { "type": "Point", "coordinates": [-43.94, -19.92] }
+    }
+  ]
+}

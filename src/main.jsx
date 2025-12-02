@@ -6,11 +6,11 @@ import App from './App.jsx'
 import InteractiveMap from './InteractiveMap.jsx'
 
 createRoot(document.getElementById('root')).render(
-  <StrictMode>
+
     <BrowserRouter>
       <Routes>
         {/* Rota da Página Inicial */}
-        <Route path="/" element={<App />} />
+        <Route path="/" element={<InteractiveMap />} />
         
         {/* Rota do Mapa com Contexto (curto, medio, longo prazo) */}
         <Route path="/mapa/:contexto" element={<InteractiveMap />} />
@@ -28,5 +28,5 @@ createRoot(document.getElementById('root')).render(
         } />
       </Routes>
     </BrowserRouter>
-  </StrictMode>
+
 )

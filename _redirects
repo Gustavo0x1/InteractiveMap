@@ -1,4 +1,4 @@
 [[redirects]]
-from = "/curto_prazo"
-to = "/curto_prazo"
+from = "/mapa/curto_prazo"
+to = "/mapa/curto_prazo"
 status = 200

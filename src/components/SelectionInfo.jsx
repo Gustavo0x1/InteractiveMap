@@ -82,10 +82,12 @@ const ColumnChart = ({ properties, layerName }) => {
 
 // --- FEATURE ITEM ---
 const FeatureItem = ({ feature, layerName }) => {
+    
     const [isOpen, setIsOpen] = useState(false);
     const properties = feature.properties;
+    console.log(properties)
     const name = properties.name || properties.Name || properties.Nome || properties.titulo || "Sem Nome";
-    const description = properties.description || properties.Description || properties.descrição || properties.descricao;
+    const description = properties.description || properties.Description || properties.descrição || properties.descricao || properties.DESCRICAO;
 
     return (
         <div className={`feature-card ${isOpen ? 'expanded' : ''}`} onClick={() => setIsOpen(!isOpen)}>
@@ -165,44 +167,78 @@ const calculateMetricsForFeatures = (features, operation = 'AVERAGE') => {
 
 // --- COMPONENTE DE RESULTADOS (CORRIGIDO) ---
 // Adicionamos valores padrão (default parameters) para evitar o erro 'undefined'
-const SimulationResults = ({ finalCount = 0, finalAreaM2 = 0, powerKW = 0, layers = [] }) => {
+const SimulationResults = ({ finalCount = 0, finalAreaM2 = 0, powerKW = 0, layers = [], tariff = 0.95 }) => {
     const irradiationLayer = layers.find(l => l.properties && (l.properties.ANNUAL !== undefined || l.properties.JAN !== undefined));
     if (!irradiationLayer) return null;
 
     const annualIrrad = irradiationLayer.properties.ANNUAL || 0;
     const efficiencyFactor = 0.75; 
     const dailyIrradKWh = annualIrrad / 1000;
+    
+    // Geração de Energia
     const dailyGeneration = powerKW * dailyIrradKWh * efficiencyFactor;
+    const monthlyGeneration = dailyGeneration * 30;
+    const annualGeneration = dailyGeneration * 365;
 
-    // Garante que finalCount seja um número antes de chamar toLocaleString
+    // Cálculos Financeiros e Ambientais
+    const monthlySavings = monthlyGeneration * tariff;
+    const annualSavings = annualGeneration * tariff;
+    const co2Avoided = (annualGeneration * 0.1) / 1000; // ~0.1 kg CO2/kWh -> convertido para Toneladas
+    const homesPowered = monthlyGeneration / 150; // Média 150kWh/mês por residência
+
     const safeCount = Number.isFinite(finalCount) ? finalCount : 0;
     const safeArea = Number.isFinite(finalAreaM2) ? finalAreaM2 : 0;
-
+    const areaInHa = safeArea / 10000;
     return (
         <div className="simulation-result-card">
-            <h5 className="result-title">⚡ Estimativa de Geração</h5>
+            <h5 className="result-title">⚡ Análise de Viabilidade</h5>
             <div className="result-grid">
+                {/* Dados Técnicos */}
                 <div className="result-item">
-                    <span className="result-label">Painéis</span>
+                    <span className="result-label">Módulos</span>
                     <span className="result-value">{safeCount.toLocaleString()} <small>unid.</small></span>
-                </div>
-                <div className="result-item highlight">
-                    <span className="result-label">Geração Mensal</span>
-                    <span className="result-value">{(dailyGeneration * 30).toLocaleString('pt-BR', {maximumFractionDigits: 0})} <small>kWh</small></span>
-                </div>
-                <div className="result-item">
-                    <span className="result-label">Área Total</span>
-                    <span className="result-value">{safeArea.toLocaleString('pt-BR', {maximumFractionDigits: 0})} <small>m²</small></span>
                 </div>
                 <div className="result-item">
                     <span className="result-label">Capacidade</span>
                     <span className="result-value">{powerKW.toFixed(2)} <small>kWp</small></span>
                 </div>
+                           <div className="result-item">
+                    <span className="result-label">Capacidade</span>
+                    <span className="result-value">{powerKW.toFixed(2)} <small>kWp</small></span>
+                </div>
+                <div className="result-item">
+                    <span className="result-label">Área utilizada</span>
+                    <span className="result-value">{areaInHa} <small>Ha</small></span>
+                </div>
+                
+                           <div className="result-item">
+                    <span className="result-label">Geração Mensal</span>
+                    <span className="result-value">{monthlyGeneration.toLocaleString('pt-BR', {maximumFractionDigits: 0})} <small>kWh</small></span>
+                </div>
+                
+                
+                {/* Dados Financeiros (Destaque) */}
+                <div className="result-item highlight-money" style={{backgroundColor: '#f0fdf4', borderColor: '#bbf7d0'}}>
+                    <span className="result-label" style={{color: '#166534'}}>Economia Mensal</span>
+                    <span className="result-value" style={{color: '#15803d'}}>
+                        {monthlySavings.toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'})}
+                    </span>
+                </div>
+                <div className="result-item highlight-money" style={{backgroundColor: '#f0fdf4', borderColor: '#bbf7d0', gridColumn: 'span 2'}}>
+                    <span className="result-label" style={{color: '#166534'}}>Economia Estimada (Anual)</span>
+                    <span className="result-value" style={{color: '#15803d', fontSize: '1.2em'}}>
+                        {annualSavings.toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'})}
+                    </span>
+                </div>
+
+        
             </div>
+            <p className="disclaimer">
+                *Considerando tarifa de {tariff.toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'})}/kWh
+            </p>
         </div>
     );
 };
-
 // --- COMPONENTE PRINCIPAL ---
 function SelectionInfo({ selectedFeatures, featureData, layers, onClose, recommendations }) {
   const [isMinimized, setIsMinimized] = useState(false);
@@ -230,9 +266,10 @@ function SelectionInfo({ selectedFeatures, featureData, layers, onClose, recomme
       else setAreaInput(prev => ({ ...prev, value: parseFloat(value) || 0 }));
   };
 
-  // --- LÓGICA DE CÁLCULO ---
-  const singlePanelArea = (panelInputs.width || 0) * ((panelInputs.height || 0) + (panelInputs.spacing || 0));
-  
+const isValidDimensions = (panelInputs.width > 0) && (panelInputs.height > 0);
+const singlePanelArea = isValidDimensions 
+      ? panelInputs.width * (panelInputs.height + (panelInputs.spacing || 0))
+      : 0;
   let finalCount = 0;
   let finalAreaM2 = 0;
 
@@ -396,7 +433,7 @@ function SelectionInfo({ selectedFeatures, featureData, layers, onClose, recomme
                           </div>
                           {simMode !== 'area' && (
                               <div className="disabled-alert">
-                                  ⚠️ Calculado automaticamente pela Qtd. de Painéis.
+                                  ⚠️ Calculado automaticamente pela quanitdade de módulos.
                               </div>
                           )}
                       </div>
@@ -489,7 +526,12 @@ function SelectionInfo({ selectedFeatures, featureData, layers, onClose, recomme
       content = (
           <div className="feature-details-list">
               {Object.entries(featureData).map(([key, value]) => {
+
+
                    if (IGNORE_PROPS.includes(key)) return null;
+                   if(key == "TITULO" || key == "DESCRICAO"){
+                   return <div key={key} className="detail-row"><span className="detail-value">{typeof value === 'number' ? value.toFixed(2) : String(value)}</span></div> 
+                   }
                    return <div key={key} className="detail-row"><span className="detail-key">{formatLabel(key)}</span><span className="detail-value">{typeof value === 'number' ? value.toFixed(2) : String(value)}</span></div>
               })}
           </div>

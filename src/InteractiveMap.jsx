@@ -123,7 +123,7 @@ function InteractiveMap() {
         steps: [
           {
             title: 'Bem-vindo!',
-            intro: `Você está visualizando o cenário de: ${contexto?.replace('_', ' ').toUpperCase() || 'ANÁLISE'}. Vamos fazer um tour rápido.`,
+            intro: `Você está visualizando o cenário de: ${contexto?.replace('_', ' ').toUpperCase() || 'curto_prazo'}. Vamos fazer um tour rápido.`,
           },
           {
             element: '.leaflet-draw',

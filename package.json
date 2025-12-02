@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@netlify/vite-plugin-react-router": "^2.1.2",
     "@turf/turf": "^7.2.0",
     "d3-scale": "^4.0.2",
     "d3-scale-chromatic": "^3.1.0",

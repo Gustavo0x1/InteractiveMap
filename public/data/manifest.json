@@ -8,7 +8,20 @@
       {
       "id": "Agricultura-curtoPrazo",
       "name": "Agricultura (Curto Prazo)",
-      "path": "/data/Agricultura_curtoPrazo.csv"
+      "path": "/data/Agricultura_curtoPrazo.csv",
+      "dataset": "curto_prazo"
+    },
+          {
+      "id": "Agricultura-medioPrazo",
+      "name": "Agricultura (Medio Prazo)",
+      "path": "/data/Agricultura_medioPrazo.csv",
+      "dataset": "medio_prazo"
+    },
+          {
+      "id": "Agricultura-longPrazo",
+      "name": "Agricultura (Longo Prazo)",
+      "path": "/data/Agricultura_longoPrazo.csv",
+      "dataset": "longo_prazo"
     },
     {
       "id": "camada-cooperativas",

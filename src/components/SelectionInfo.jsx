@@ -4,7 +4,8 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGri
 import introJs from 'intro.js';
 import 'intro.js/introjs.css';
 import './styles/SelectionInfo.css';
-
+import img_painel_altura from '../img/ICONS/PainelSolar_altura.png'
+import img_painel_largura from '../img/ICONS/PainelSolar_largura.png'
 // --- CONFIGURAÇÕES CONSTANTES ---
 const IGNORE_PROPS = [
   'id', 'name', 'description', 'descrição', 'descricao', 'ID', 'LAT', 'LON', 'municipios', 
@@ -24,7 +25,7 @@ const formatLabel = (label) => {
     return TRANSLATIONS[upperLabel] || label;
 };
 
-// --- COMPONENTE DE GRÁFICO ---
+// --- CHART COMPONENT ---
 const ColumnChart = ({ properties, layerName }) => {
     let data = Object.entries(properties).map(([key, value]) => {
         if (IGNORE_PROPS.includes(key) || IGNORE_PROPS.includes(key.toUpperCase())) return null;
@@ -66,22 +67,9 @@ const ColumnChart = ({ properties, layerName }) => {
                 <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={data} margin={{ top: 10, right: 5, left: -20, bottom: 0 }}>
                         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
-                        <XAxis 
-                            dataKey="name" 
-                            interval={0} 
-                            angle={-90} 
-                            textAnchor="end" 
-                            height={110} 
-                            tick={{ fontSize: 10, fill: '#666', dy: 3 }} 
-                            tickFormatter={formatLabel} 
-                        />
+                        <XAxis dataKey="name" interval={0} angle={-90} textAnchor="end" height={110} tick={{ fontSize: 10, fill: '#666', dy: 3 }} tickFormatter={formatLabel} />
                         <YAxis tick={{ fontSize: 10, fill: '#888' }} tickFormatter={(val) => val >= 1000 ? `${(val/1000).toFixed(0)}k` : val} />
-                        <Tooltip 
-                            cursor={{ fill: 'rgba(0,0,0,0.02)' }}
-                            contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}
-                            formatter={(value) => [value.toLocaleString('pt-BR'), 'Valor']}
-                            labelFormatter={formatLabel}
-                        />
+                        <Tooltip cursor={{ fill: 'rgba(0,0,0,0.02)' }} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }} formatter={(value) => [value.toLocaleString('pt-BR'), 'Valor']} labelFormatter={formatLabel} />
                         <Bar dataKey="value" radius={[4, 4, 0, 0]}>
                             {data.map((entry, index) => <Cell key={`cell-${index}`} fill="#3b82f6" />)}
                         </Bar>
@@ -92,7 +80,7 @@ const ColumnChart = ({ properties, layerName }) => {
     );
 };
 
-// --- SUB-COMPONENTE PARA ITEM EXPANSÍVEL ---
+// --- FEATURE ITEM ---
 const FeatureItem = ({ feature, layerName }) => {
     const [isOpen, setIsOpen] = useState(false);
     const properties = feature.properties;
@@ -108,15 +96,9 @@ const FeatureItem = ({ feature, layerName }) => {
                 </div>
                 <span className="toggle-icon">{isOpen ? '−' : '+'}</span>
             </div>
-
             {isOpen && (
                 <div className="feature-body" onClick={(e) => e.stopPropagation()}>
-                    {description && (
-                        <div className="feature-description">
-                            <strong>Descrição:</strong>
-                            <p>{description}</p>
-                        </div>
-                    )}
+                    {description && <div className="feature-description"><strong>Descrição:</strong><p>{description}</p></div>}
                     <div className="feature-grid">
                         {Object.entries(properties).map(([key, value]) => {
                             if (IGNORE_PROPS.includes(key) || IGNORE_PROPS.includes(key.toLowerCase())) return null;
@@ -134,39 +116,30 @@ const FeatureItem = ({ feature, layerName }) => {
     );
 };
 
-// --- FUNÇÕES AUXILIARES DE CÁLCULO (CORRIGIDA) ---
-// Restaurei a lista completa de palavras-chave para garantir que safras específicas ativem o modo MAX/Destaque
+// --- HELPERS ---
 const isMaxAggregation = (layerName) => {
     if (!layerName) return false;
     const normalizedName = layerName.toLowerCase();
-    return normalizedName.includes('cultivo') || 
-           normalizedName.includes('cultura') || 
-           normalizedName.includes('pecuária') || 
-           normalizedName.includes('produção') || 
-           normalizedName.includes('milho') || 
-           normalizedName.includes('soja') || 
-           normalizedName.includes('feijao') || 
-           normalizedName.includes('cafe') || 
-           normalizedName.includes('banana') || 
-           normalizedName.includes('dados') || 
-           normalizedName.includes('csv');
+    return normalizedName.includes('cultivo') || normalizedName.includes('cultura') || normalizedName.includes('pecuária') || 
+           normalizedName.includes('produção') || normalizedName.includes('Agricultura') || normalizedName.includes('soja') || 
+           normalizedName.includes('feijao') || normalizedName.includes('cafe') || normalizedName.includes('banana') || 
+           normalizedName.includes('dados') || normalizedName.includes('csv') || normalizedName.includes('médio') || 
+           normalizedName.includes('medio') || normalizedName.includes('longo') || normalizedName.includes('prazo') || 
+           normalizedName.includes('cenário') || normalizedName.includes('projecao');
 }
 
 const calculateMetricsForFeatures = (features, operation = 'AVERAGE') => {
     const metrics = {}; 
     let totalFeatures = features.length;
     const commonProps = {};
-
     if (totalFeatures === 0) return { count: 0, properties: {} };
 
     features.forEach(feature => {
         const properties = feature.properties;
         const featureLocation = properties.name || properties.NAME || properties.nome || properties.municipio || properties.MUNICIPIO || 'Local Desconhecido';
-
         Object.entries(properties).forEach(([key, value]) => {
             const normalizedKey = key.toUpperCase();
             if (IGNORE_PROPS.includes(key) || IGNORE_PROPS.includes(normalizedKey) || key.toLowerCase() === 'name') return;
-
             if (typeof value === 'number') {
                 if (operation === 'AVERAGE') {
                     metrics[key] = (metrics[key] || 0) + value;
@@ -174,93 +147,67 @@ const calculateMetricsForFeatures = (features, operation = 'AVERAGE') => {
                     if (!metrics.hasOwnProperty(key)) {
                         metrics[key] = { value: value, location: featureLocation };
                     } else {
-                        if (value > metrics[key].value) {
-                            metrics[key] = { value: value, location: featureLocation };
-                        }
+                        if (value > metrics[key].value) metrics[key] = { value: value, location: featureLocation };
                     }
                 }
-            } else if (!commonProps.hasOwnProperty(key)) {
-                commonProps[key] = value;
-            }
+            } else if (!commonProps.hasOwnProperty(key)) commonProps[key] = value;
         });
     });
 
     const finalMetrics = {};
     if (operation === 'AVERAGE') {
-        if (totalFeatures === 1) {
-            Object.assign(finalMetrics, metrics);
-        } else {
-            Object.entries(metrics).forEach(([key, sum]) => finalMetrics[key] = sum / totalFeatures);
-        }
-    } else {
-        Object.assign(finalMetrics, metrics);
-    }
+        if (totalFeatures === 1) Object.assign(finalMetrics, metrics);
+        else Object.entries(metrics).forEach(([key, sum]) => finalMetrics[key] = sum / totalFeatures);
+    } else Object.assign(finalMetrics, metrics);
 
-    return {
-        count: totalFeatures,
-        properties: { ...commonProps, ...finalMetrics },
-        calculationType: operation === 'MAX' ? 'Destaques' : 'Média'
-    };
+    return { count: totalFeatures, properties: { ...commonProps, ...finalMetrics }, calculationType: operation === 'MAX' ? 'Destaques' : 'Média' };
 };
 
-// --- COMPONENTE DE RESULTADOS DA SIMULAÇÃO ---
-const SimulationResults = ({ inputs, layers }) => {
-    const irradiationLayer = layers.find(l => 
-        l.properties && (l.properties.ANNUAL !== undefined || l.properties.JAN !== undefined)
-    );
-
+// --- COMPONENTE DE RESULTADOS (CORRIGIDO) ---
+// Adicionamos valores padrão (default parameters) para evitar o erro 'undefined'
+const SimulationResults = ({ finalCount = 0, finalAreaM2 = 0, powerKW = 0, layers = [] }) => {
+    const irradiationLayer = layers.find(l => l.properties && (l.properties.ANNUAL !== undefined || l.properties.JAN !== undefined));
     if (!irradiationLayer) return null;
 
     const annualIrrad = irradiationLayer.properties.ANNUAL || 0;
-    const systemPowerKW = (inputs.count * inputs.power) / 1000; 
-    const usefulPanelArea = inputs.width * inputs.height;
-    
-    // Cálculo com Espaçamento
-    const effectiveWidth = inputs.width; 
-    const effectiveHeight = inputs.height + inputs.spacing; 
-    const totalOccupiedArea = inputs.count * effectiveWidth * effectiveHeight; 
-    
     const efficiencyFactor = 0.75; 
     const dailyIrradKWh = annualIrrad / 1000;
+    const dailyGeneration = powerKW * dailyIrradKWh * efficiencyFactor;
 
-    const dailyGeneration = systemPowerKW * dailyIrradKWh * efficiencyFactor;
-    const monthlyGeneration = dailyGeneration * 30;
-    const annualGeneration = dailyGeneration * 365;
-    const moduleEfficiency = (inputs.power / (usefulPanelArea * 1000)) * 100;
+    // Garante que finalCount seja um número antes de chamar toLocaleString
+    const safeCount = Number.isFinite(finalCount) ? finalCount : 0;
+    const safeArea = Number.isFinite(finalAreaM2) ? finalAreaM2 : 0;
 
     return (
         <div className="simulation-result-card">
-            <h5 className="result-title">⚡ Potencial de Geração Estimado</h5>
+            <h5 className="result-title">⚡ Estimativa de Geração</h5>
             <div className="result-grid">
                 <div className="result-item">
-                    <span className="result-label">Capacidade do Sistema</span>
-                    <span className="result-value">{systemPowerKW.toFixed(2)} <small>kWp</small></span>
+                    <span className="result-label">Painéis</span>
+                    <span className="result-value">{safeCount.toLocaleString()} <small>unid.</small></span>
                 </div>
                 <div className="result-item highlight">
-                    <span className="result-label">Geração Média Mensal</span>
-                    <span className="result-value">{monthlyGeneration.toFixed(0)} <small>kWh</small></span>
+                    <span className="result-label">Geração Mensal</span>
+                    <span className="result-value">{(dailyGeneration * 30).toLocaleString('pt-BR', {maximumFractionDigits: 0})} <small>kWh</small></span>
                 </div>
                 <div className="result-item">
-                    <span className="result-label">Área de Ocupação</span>
-                    <span className="result-value">{totalOccupiedArea.toFixed(1)} <small>m²</small></span>
+                    <span className="result-label">Área Total</span>
+                    <span className="result-value">{safeArea.toLocaleString('pt-BR', {maximumFractionDigits: 0})} <small>m²</small></span>
                 </div>
-             
                 <div className="result-item">
-                    <span className="result-label">Geração Anual</span>
-                    <span className="result-value">{(annualGeneration/1000).toFixed(2)} <small>MWh</small></span>
+                    <span className="result-label">Capacidade</span>
+                    <span className="result-value">{powerKW.toFixed(2)} <small>kWp</small></span>
                 </div>
             </div>
-            <p className="disclaimer">
-                *Área considera espaçamento entre fileiras de {inputs.spacing}m. Geração baseada na irradiação local ({dailyIrradKWh.toFixed(2)} kWh/m²/dia).
-            </p>
         </div>
     );
 };
 
-
+// --- COMPONENTE PRINCIPAL ---
 function SelectionInfo({ selectedFeatures, featureData, layers, onClose, recommendations }) {
   const [isMinimized, setIsMinimized] = useState(false);
-  
+  const [simMode, setSimMode] = useState('count');
+
   const [panelInputs, setPanelInputs] = useState({
       count: 100,
       width: 1.1,
@@ -268,88 +215,58 @@ function SelectionInfo({ selectedFeatures, featureData, layers, onClose, recomme
       power: 550,
       spacing: 1.5 
   });
+  
+  const [areaInput, setAreaInput] = useState({ value: 1, unit: 'ha' });
 
-  const handleInputChange = (e) => {
+  const handlePanelChange = (e) => {
       const { name, value } = e.target;
-      const numValue = parseFloat(value);
-      setPanelInputs(prev => ({ ...prev, [name]: isNaN(numValue) ? 0 : numValue }));
+      // Garante que o valor seja numérico ou 0, evitando undefined
+      setPanelInputs(prev => ({ ...prev, [name]: parseFloat(value) || 0 }));
   };
+
+  const handleAreaChange = (e) => {
+      const { name, value } = e.target;
+      if (name === 'unit') setAreaInput(prev => ({ ...prev, unit: value }));
+      else setAreaInput(prev => ({ ...prev, value: parseFloat(value) || 0 }));
+  };
+
+  // --- LÓGICA DE CÁLCULO ---
+  const singlePanelArea = (panelInputs.width || 0) * ((panelInputs.height || 0) + (panelInputs.spacing || 0));
+  
+  let finalCount = 0;
+  let finalAreaM2 = 0;
+
+  if (simMode === 'count') {
+      finalCount = panelInputs.count || 0;
+      finalAreaM2 = finalCount * singlePanelArea;
+  } else {
+      const inputAreaM2 = areaInput.unit === 'ha' ? (areaInput.value || 0) * 10000 : (areaInput.value || 0);
+      finalAreaM2 = inputAreaM2;
+      finalCount = singlePanelArea > 0 ? Math.floor(inputAreaM2 / singlePanelArea) : 0;
+  }
+
+  const finalSystemPowerKW = (finalCount * (panelInputs.power || 0)) / 1000;
 
   useEffect(() => {
     const timer = setTimeout(() => {
         if (selectedFeatures && Object.keys(selectedFeatures).length > 0) {
-            
-            const steps = [
-                {
-                    element: '.info-panel-floating',
-                    intro: 'Este é o <b>Relatório da seleção</b>. Aqui consolidamos todos os dados da área que você selecionou no mapa.',
-                    position: 'right'
-                },
-                {
-                    element: '.input-section',
-                    intro: '<b>Simulador Solar:</b> Ajuste a quantidade, potência e dimensões dos painéis para simular um projeto fotovoltaico nesta região.',
-                    position: 'right'
-                },
-                {
-                    element: '.simulation-result-card',
-                    intro: '<b>Resultados em Tempo Real:</b> Veja a estimativa de geração de energia e área necessária baseada nos dados climáticos locais.',
-                    position: 'right'
-                }
-            ];
-
-            if (document.querySelector('.insight-card')) {
-                steps.push({
-                    element: '.insight-card',
-                    intro: '<b>Diagnóstico Inteligente:</b> O sistema identificou um potencial produtivo aqui! Veja as recomendações sugeridas.',
-                    position: 'left'
-                });
-            }
-
-            if (document.querySelector('.chart-wrapper')) {
-                steps.push({
-                    element: '.chart-wrapper',
-                    intro: 'Visualize os dados climáticos e produtivos através destes gráficos interativos.',
-                    position: 'left'
-                });
-            }
-
-            if (document.querySelector('.features-container')) {
-                steps.push({
-                    element: '.features-container',
-                    intro: 'Aqui estão as <b>Cooperativas e Pontos de Interesse</b> encontrados dentro da área selecionada. Clique neles para ver detalhes.',
-                    position: 'left'
-                });
-            }
-
             introJs().setOptions({
-                steps: steps,
-                showProgress: true,
-                showBullets: false,
-                nextLabel: 'Próximo',
-                prevLabel: 'Anterior',
-                doneLabel: 'Entendi',
-                exitOnOverlayClick: false,
-                scrollToElement: true
+                steps: [
+                    { element: '.info-panel-floating', intro: 'Este é o <b>Visualizador de seleção</b>, aqui você encontrará informações específicas da área selecionada.', position: 'right' },
+                    { element: '.intro_fotosim', intro: 'Simulador Fotovoltáico: Obtenha uma análise rápida a respeito das possibilidades da sua região!.', position: 'right' },
+                    { intro: 'O Visualizador de seleção também fornece a visualização gráfica dos dados a respeito da Pecuária e Cultivo na região, além de cooperativas próximas. <br/> Sinta-se livre para explorar a ferramenta', position: 'right' }
+                ],
+                showProgress: true, showBullets: false, doneLabel: 'Ok'
             }).start();
         }
     }, 1000); 
-    
     return () => clearTimeout(timer);
   }, [selectedFeatures]); 
 
-
-  const getLayerName = (layerId) => {
-    const layer = layers.find(l => l.id === layerId);
-    return layer ? layer.name : layerId;
-  };
-
   const isAreaSelection = selectedFeatures && Object.keys(selectedFeatures).length > 0;
   const isFeatureSelection = !!featureData;
-
   if (!isAreaSelection && !isFeatureSelection) return null;
-
   const title = isAreaSelection ? "Relatório da seleção" : (featureData.name || "Informações");
-  const subtitle = isAreaSelection ? "Análise de Área" : "Detalhes da Feição";
 
   let content = null;
   
@@ -359,59 +276,51 @@ function SelectionInfo({ selectedFeatures, featureData, layers, onClose, recomme
       const otherFeatures = [];
 
       Object.entries(selectedFeatures).forEach(([layerId, features]) => {
+          const l = layers.find(lay => lay.id === layerId);
+          const layerName = l ? l.name : layerId;
           const layerType = layerTypeMap.get(layerId);
-          const layerName = getLayerName(layerId);
           
           if (layerType === 'choropleth') {
-              // Garante que a operação será MAX se for uma camada de cultivo/produção
-              const operation = isMaxAggregation(layerName) ? 'MAX' : 'AVERAGE';
-              const data = calculateMetricsForFeatures(features, operation);
-              if (data.count > 0) aggregatedLayers.push({ id: layerId, name: layerName, ...data });
+              const op = isMaxAggregation(layerName) ? 'MAX' : 'AVERAGE';
+              const d = calculateMetricsForFeatures(features, op);
+              if (d.count > 0) aggregatedLayers.push({ id: layerId, name: layerName, ...d });
           } else {
               otherFeatures.push({ id: layerId, name: layerName, features: features });
           }
       });
 
-      // LÓGICA DE DIAGNÓSTICO (RESTAURADA)
+      // LÓGICA DE DIAGNÓSTICO
       let diagnosisBlock = null;
       for (const layer of aggregatedLayers) {
-          // Verifica se a camada foi marcada como Destaques (MAX)
           if (layer.calculationType === 'Destaques') {
-              let maxKey = null;
-              let maxVal = -Infinity;
-              let maxLocation = "";
-
-              // Encontra o maior valor dentro dessa camada
+              let maxKey = null; let maxVal = -Infinity; let maxLocation = "";
               Object.entries(layer.properties).forEach(([key, data]) => {
                   if (data && typeof data.value === 'number') {
-                      if (data.value > maxVal) {
-                          maxVal = data.value;
-                          maxKey = key; 
-                          maxLocation = data.location; // Recupera a cidade
-                      }
+                      if (data.value > maxVal) { maxVal = data.value; maxKey = key; maxLocation = data.location; }
                   }
               });
-
-              // Se achou um destaque, procura no recommendation.csv
               if (maxKey && recommendations) {
-                  let rec = recommendations[maxKey] || recommendations[maxKey.toUpperCase()];
-                  if (!rec) rec = recommendations[`"${maxKey}"`];
-                  
+                  const normalizedMaxKey = maxKey.toUpperCase().trim();
+                  let rec = recommendations[normalizedMaxKey];
+                  if (!rec) {
+                      const recKeys = Object.keys(recommendations);
+                      const partialMatch = recKeys.find(rKey => normalizedMaxKey.includes(rKey.toUpperCase()) && rKey.length > 3);
+                      if (partialMatch) rec = recommendations[partialMatch];
+                  }
                   if (rec) {
                       diagnosisBlock = (
                           <div className="insight-card">
                               <div className="insight-icon">💡</div>
                               <div className="insight-content">
                                   <h4>Diagnóstico: Polo de {formatLabel(maxKey)}</h4>
-                                  <p>Foi identificado um polo produtor nesta região, com destaque para <strong>{maxLocation}</strong>.</p>
+                                  <p>Polo produtor identificado em <strong>{maxLocation}</strong>.</p>
                                   <div className="insight-tags">
                                       <span className="tag">Recomendação: {rec.PainelRecomendado}</span>
-                                      <span className="tag">Irrigação: {rec.IrrigacaoRecomendada}</span>
+                                    
                                   </div>
                               </div>
                           </div>
                       );
-                      // Para no primeiro diagnóstico encontrado para não poluir
                       break;
                   }
               }
@@ -420,35 +329,144 @@ function SelectionInfo({ selectedFeatures, featureData, layers, onClose, recomme
 
       content = (
           <>
-              {/* Renderiza o Diagnóstico no topo, se existir */}
               {diagnosisBlock}
               
-              <div className="section-block input-section">
+              <div className="section-block input-section intro_fotosim">
                   <h4 className="section-title">Simulação Fotovoltaica</h4>
-                  <div className="input-grid">
-                      <div className="input-group">
-                          <label>Qtd. Painéis</label>
-                          <input type="number" name="count" value={panelInputs.count} onChange={handleInputChange} className="modern-input"/>
+                  
+                  {/* --- OPÇÃO 1: QUANTIDADE DE PAINÉIS --- */}
+                  <div 
+                    className={`sim-option-container ${simMode === 'count' ? 'active' : 'disabled'}`}
+                    onClick={() => setSimMode('count')}
+                  >
+                      <div className="sim-option-header">
+                          <input type="radio" checked={simMode === 'count'} readOnly />
+                          <label>Definir por Quantidade</label>
                       </div>
-                      <div className="input-group">
-                          <label>Potência (W)</label>
-                          <input type="number" name="power" value={panelInputs.power} onChange={handleInputChange} className="modern-input"/>
-                      </div>
-                      <div className="input-group">
-                          <label>Largura (m)</label>
-                          <input type="number" name="width" value={panelInputs.width} onChange={handleInputChange} step="0.1" className="modern-input"/>
-                      </div>
-                      <div className="input-group">
-                          <label>Altura (m)</label>
-                          <input type="number" name="height" value={panelInputs.height} onChange={handleInputChange} step="0.1" className="modern-input"/>
-                      </div>
-                      <div className="input-group" style={{ gridColumn: '1 / -1' }}>
-                          <label>Distância entre Fileiras (m)</label>
-                          <input type="number" name="spacing" value={panelInputs.spacing} onChange={handleInputChange} step="0.1" className="modern-input"/>
+                      <div className="sim-option-body">
+                          <label className="sub-label">Número de Módulos</label>
+                          <input 
+                              type="number" 
+                              name="count" 
+                              value={simMode === 'count' ? panelInputs.count : finalCount} 
+                              onChange={handlePanelChange} 
+                              className="modern-input"
+                              disabled={simMode !== 'count'}
+                          />
+                          {simMode !== 'count' && (
+                              <div className="disabled-alert">
+                                  ⚠️ Calculado automaticamente pela Área.
+                              </div>
+                          )}
                       </div>
                   </div>
-                  
-                  <SimulationResults inputs={panelInputs} layers={aggregatedLayers} />
+
+                  {/* --- OPÇÃO 2: ÁREA DISPONÍVEL --- */}
+                  <div 
+                    className={`sim-option-container ${simMode === 'area' ? 'active' : 'disabled'}`}
+                    onClick={() => setSimMode('area')}
+                  >
+                      <div className="sim-option-header">
+                          <input type="radio" checked={simMode === 'area'} readOnly />
+                          <label>Definir por Área Disponível</label>
+                      </div>
+                      <div className="sim-option-body">
+                          <label className="sub-label">Área Total</label>
+                          <div className="d-flex gap-2">
+                              <input 
+                                  type="number" 
+                                  name="value" 
+                                  value={simMode === 'area' ? areaInput.value : (areaInput.unit === 'ha' ? (finalAreaM2/10000).toFixed(4) : finalAreaM2.toFixed(0))} 
+                                  onChange={handleAreaChange} 
+                                  className="modern-input"
+                                  style={{flex: 2}}
+                                  disabled={simMode !== 'area'}
+                              />
+                              <select 
+                                  name="unit" 
+                                  value={areaInput.unit} 
+                                  onChange={handleAreaChange} 
+                                  className="modern-input"
+                                  style={{flex: 1}}
+                                  disabled={simMode !== 'area'}
+                              >
+                                  <option value="m2">m²</option>
+                                  <option value="ha">ha</option>
+                              </select>
+                          </div>
+                          {simMode !== 'area' && (
+                              <div className="disabled-alert">
+                                  ⚠️ Calculado automaticamente pela Qtd. de Painéis.
+                              </div>
+                          )}
+                      </div>
+                  </div>
+
+       <div className="input-grid mt-3">
+    <div className="input-group">
+        <label>Potência (W)</label>
+        <input 
+            type="number" 
+            name="power" 
+            value={panelInputs.power} 
+            onChange={handlePanelChange} 
+            className="modern-input"
+        />
+    </div>
+    
+    <div className="input-group">
+        <label>
+            Largura (m) 
+            <img className='solarPanel_icon' src={img_painel_largura} alt="Largura" />
+        </label>
+        <input 
+            type="number" 
+            name="width" 
+            value={panelInputs.width} 
+            onChange={handlePanelChange} 
+            step="0.1" 
+            className="modern-input"
+        />
+    </div>
+    
+    <div className="input-group">
+        <label>
+            Altura (m) 
+            <img className='solarPanel_icon' src={img_painel_altura} alt="Altura" />
+        </label>
+        <input 
+            type="number" 
+            name="height" 
+            value={panelInputs.height} 
+            onChange={handlePanelChange} 
+            step="0.1" 
+            className="modern-input"
+        />
+    </div>
+    
+    <div className="input-group" >
+        <label>
+            Espaçamento entre Fileiras (m)
+            {/* Se quiser usar ícone aqui também */}
+            {/* <img className='solarPanel_icon' src={img_painel_altura} alt="Espaçamento" /> */}
+        </label>
+        <input 
+            type="number" 
+            name="spacing" 
+            value={panelInputs.spacing} 
+            onChange={handlePanelChange} 
+            step="0.1" 
+            className="modern-input"
+        />
+    </div>
+</div>
+
+                  <SimulationResults 
+                      finalCount={finalCount || 0} 
+                      finalAreaM2={finalAreaM2 || 0} 
+                      powerKW={finalSystemPowerKW || 0}
+                      layers={aggregatedLayers} 
+                  />
               </div>
 
               {aggregatedLayers.map(layer => (
@@ -457,20 +475,11 @@ function SelectionInfo({ selectedFeatures, featureData, layers, onClose, recomme
                       <ColumnChart properties={layer.properties} layerName={layer.name} />
                   </div>
               ))}
-
               {otherFeatures.length > 0 && (
                   <div className="section-block">
-                      <h4 className="section-title">Pontos de Interesse / Cooperativas</h4>
+                      <h4 className="section-title">Pontos de Interesse</h4>
                       <div className="features-container">
-                          {otherFeatures.map(layer => (
-                              layer.features.map((feature, index) => (
-                                  <FeatureItem 
-                                      key={`${layer.id}-${index}`} 
-                                      feature={feature} 
-                                      layerName={layer.name} 
-                                  />
-                              ))
-                          ))}
+                          {otherFeatures.map(layer => layer.features.map((feature, index) => <FeatureItem key={`${layer.id}-${index}`} feature={feature} layerName={layer.name} />))}
                       </div>
                   </div>
               )}
@@ -481,12 +490,7 @@ function SelectionInfo({ selectedFeatures, featureData, layers, onClose, recomme
           <div className="feature-details-list">
               {Object.entries(featureData).map(([key, value]) => {
                    if (IGNORE_PROPS.includes(key)) return null;
-                   return (
-                       <div key={key} className="detail-row">
-                           <span className="detail-key">{formatLabel(key)}</span>
-                           <span className="detail-value">{typeof value === 'number' ? value.toFixed(2) : String(value)}</span>
-                       </div>
-                   )
+                   return <div key={key} className="detail-row"><span className="detail-key">{formatLabel(key)}</span><span className="detail-value">{typeof value === 'number' ? value.toFixed(2) : String(value)}</span></div>
               })}
           </div>
       )
@@ -495,22 +499,13 @@ function SelectionInfo({ selectedFeatures, featureData, layers, onClose, recomme
   return (
     <div className={`info-panel-floating ${isMinimized ? 'minimized' : ''}`}>
         <div className="panel-header">
-            <div className="header-info">
-                <h2>{title}</h2>
-                {!isMinimized && <span className="header-subtitle">{subtitle}</span>}
-            </div>
+            <div className="header-info"><h2>{title}</h2>{!isMinimized && <span className="header-subtitle">Análise</span>}</div>
             <div className="header-actions">
-                <button className="icon-btn" onClick={() => setIsMinimized(!isMinimized)} title={isMinimized ? "Expandir" : "Minimizar"}>
-                   {isMinimized ? '⤢' : '—'}
-                </button>
-                <button className="icon-btn close-btn" onClick={onClose} title="Fechar">×</button>
+                <button className="icon-btn" onClick={() => setIsMinimized(!isMinimized)}>{isMinimized ? '⤢' : '—'}</button>
+                <button className="icon-btn close-btn" onClick={onClose}>×</button>
             </div>
         </div>
-        {!isMinimized && (
-            <div className="panel-scroll-content">
-                {content}
-            </div>
-        )}
+        {!isMinimized && <div className="panel-scroll-content">{content}</div>}
     </div>
   );
 }

@@ -141,12 +141,15 @@
   gap: 12px;
 }
 
-.input-group {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
+.input-group label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #555;
 
+  display: flex;
+  align-items: center; /* Centraliza texto e imagem verticalmente */
+  min-height: 22px;    /* Força uma altura mínima igual para todos (com ou sem imagem) */
+}
 .input-group label {
   font-size: 11px;
   font-weight: 600;
@@ -324,4 +327,93 @@
 .grid-value {
   font-size: 12px;
   color: #0f172a;
+}
+.solarPanel_icon {
+  height: 18px; /* Altura fixa para não estourar o layout */
+  width: auto;
+  margin-left: 6px;
+  opacity: 0.8;
+  object-fit: contain;
+}
+
+.input-group label {
+  display: flex;
+  align-items: center; /* Centraliza verticalmente */
+  gap: 8px; /* Adiciona um pequeno espaço entre o texto e a imagem */
+}
+
+/* Opcional: Garante que a imagem não distorça o layout */
+.solarPanel_icon {
+  height: 20px; /* Ou o tamanho que preferir */
+  width: auto;
+  object-fit: contain;
+}
+/* Adicione no final do arquivo */
+
+.sim-option-container {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 10px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  background-color: #fff;
+}
+
+.sim-option-container.active {
+  border-color: #3b82f6;
+  background-color: #f0f7ff;
+  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.1);
+}
+
+.sim-option-container.disabled {
+  background-color: #f9fafb;
+  opacity: 0.9;
+  border-style: dashed;
+}
+
+.sim-option-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #333;
+}
+
+.sim-option-body {
+  padding-left: 24px; /* Alinha com o texto do header */
+}
+
+.sub-label {
+  display: block;
+  font-size: 0.8rem;
+  color: #666;
+  margin-bottom: 4px;
+}
+
+/* Alerta de Campo Desabilitado */
+.disabled-alert {
+  font-size: 0.75rem;
+  color: #d97706; /* Cor âmbar/laranja */
+  background-color: #fffbeb;
+  padding: 4px 8px;
+  border-radius: 4px;
+  margin-top: 6px;
+  border: 1px solid #fcd34d;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.sim-option-container.active .disabled-alert {
+  display: none;
+}
+
+/* Ajuste nos inputs quando desabilitados */
+.modern-input:disabled {
+  background-color: #e5e7eb;
+  color: #6b7280;
+  cursor: not-allowed;
+  font-weight: bold; /* Destaca o valor calculado */
 }

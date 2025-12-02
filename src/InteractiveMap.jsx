@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useParams } from 'react-router-dom'; // IMPORTAÇÃO ADICIONADA
 import * as turf from '@turf/turf';
 import shp from 'shpjs';
 import Papa from 'papaparse';
@@ -13,7 +14,6 @@ import Welcome from './components/Welcome';
 import 'intro.js/introjs.css';
 import introJs from 'intro.js';
 
-// ... (Mantenha as funções createLayerFromCSV e createLayerFromGeoJSON exatamente como estavam) ...
 const createLayerFromCSV = async (layerInfo, municipiosGeoJSON) => {
   try {
     console.log(`[${layerInfo.name}] Iniciando carregamento (CSV)...`);
@@ -26,7 +26,6 @@ const createLayerFromCSV = async (layerInfo, municipiosGeoJSON) => {
     const results = Papa.parse(csvText, { header: true, skipEmptyLines: true });
     
     const customData = results.data;
- 
     const keyField = results.meta.fields[0]; 
 
     const dataMap = new Map();
@@ -46,7 +45,6 @@ const createLayerFromCSV = async (layerInfo, municipiosGeoJSON) => {
         const newProperties = { ...feature.properties };
         for (const key in matchingData) {
           const value = parseFloat(matchingData[key]);
-        
           newProperties[key] = isNaN(value) ? matchingData[key] : value;
         }
         return { ...feature, properties: newProperties };
@@ -57,13 +55,9 @@ const createLayerFromCSV = async (layerInfo, municipiosGeoJSON) => {
     console.log(`[${layerInfo.name}] Feições unidas: ${newFeatures.length}`);
 
     if (newFeatures.length > 0) {
- 
       const customExcluded = ['id', 'name', 'description'];
-      
-
       const layerAttributes = results.meta.fields
         .filter(key =>
-      
           !customExcluded.includes(key) &&
           key.toLowerCase() !== keyField.toLowerCase()
         )
@@ -107,7 +101,7 @@ const createLayerFromGeoJSON = async (layerInfo) => {
 };
 
 function InteractiveMap() {
-  // ... (Estados existentes) ...
+  const { contexto } = useParams(); // OBTENDO O CONTEXTO DA URL
   const [recommendations, setRecommendations] = useState({});
   const [showMap, setShowMap] = useState(false);
   const [layers, setLayers] = useState([]);
@@ -123,25 +117,23 @@ function InteractiveMap() {
     JUL: 'Julho', AUG: 'Agosto', SEP: 'Setembro', OCT: 'Outubro', NOV: 'Novembro', DEC: 'Dezembro', ANNUAL: 'Anual',
   };
 
-  // --- CONFIGURAÇÃO DO TUTORIAL ---
   useEffect(() => {
-    // Usamos um pequeno timeout para garantir que o mapa e os controles (Leaflet Draw) já foram renderizados no DOM
     const timer = setTimeout(() => {
       introJs().setOptions({
         steps: [
           {
             title: 'Bem-vindo!',
-            intro: 'Bem-vindo à ferramenta de análise AGROPV! Vamos fazer um tour rápido pelas funcionalidades.',
+            intro: `Você está visualizando o cenário de: ${contexto?.replace('_', ' ').toUpperCase() || 'ANÁLISE'}. Vamos fazer um tour rápido.`,
           },
           {
-            element: '.leaflet-draw', // Classe padrão do Leaflet Draw
+            element: '.leaflet-draw',
             intro: 'Utilize estas ferramentas para desenhar polígonos no mapa e filtrar os dados.',
-            position: 'left'
+            highlightClass:'.leaflet-draw'
           },
           {
-            element: '.floating-panel', // Classe do seu componente Sidebar
+            element: '.floating-panel',
             intro: 'Aqui nesta barra lateral você controla as camadas visíveis e visualiza informações detalhadas.',
-            position: 'right'
+            
           }
         ],
         showProgress: true,
@@ -150,12 +142,10 @@ function InteractiveMap() {
         prevLabel: 'Anterior',
         doneLabel: 'Pronto'
       }).start();
-    }, 1000); // Espera 1 segundo após a montagem
+    }, 2000);
 
     return () => clearTimeout(timer);
-  }, []); // Executa apenas uma vez na montagem do componente
-
-  // ... (Restante das funções: handleAreaSelect, useEffects de dados, etc.) ...
+  }, [contexto]); // Executa quando o contexto muda ou na montagem
 
   const handleAreaSelect = useCallback((drawnPolygon) => {
     if (!drawnPolygon?.geometry || !drawnPolygon.geometry.coordinates?.length) {
@@ -190,8 +180,7 @@ function InteractiveMap() {
 
   useEffect(() => {
     const fetchData = async () => {
-      // ... (código original de fetchData) ...
-      console.log("--- Iniciando carregamento de todos os dados ---");
+      console.log(`--- Iniciando carregamento de dados para contexto: ${contexto} ---`);
       try {
         const recResponse = await fetch('/data/recommendations.csv');
         const recText = await recResponse.text();
@@ -229,7 +218,13 @@ function InteractiveMap() {
         const manifestResponse = await fetch('/data/manifest.json');
         const manifest = await manifestResponse.json();
 
-        const customLayerPromises = manifest.layers.map(layerInfo => {
+        // --- LÓGICA DE FILTRAGEM ---
+        const filteredLayers = manifest.layers.filter(layer => {
+
+          return !layer.dataset || layer.dataset === 'common' || layer.dataset === contexto;
+        });
+
+        const customLayerPromises = filteredLayers.map(layerInfo => {
           if (layerInfo.type === 'point_icon' || layerInfo.type === 'point_circle') {
             return createLayerFromGeoJSON(layerInfo);
           }
@@ -245,7 +240,7 @@ function InteractiveMap() {
       }
     };
     fetchData();
-  }, []);
+  }, [contexto]); // Dependência adicionada: recarrega se o contexto mudar
 
   useEffect(() => {
     const activeLayer = layers.find(l => l.visible && l.type === 'choropleth');
@@ -340,7 +335,6 @@ function InteractiveMap() {
 
   return (
     <div className="app-container">
-      {/* Certifique-se que o Sidebar tem a classe 'sidebar' para o Intro.js encontrá-lo */}
       <Sidebar
         layers={layers}
         attributes={attributes}
@@ -367,6 +361,7 @@ function InteractiveMap() {
         selectedFeatures={selectedFeatures}
         onPolygonClick={handlePolygonClick}
         onFeatureClick={handleFeatureClick}
+        selectedFeatureData={selectedFeatureData}
       />
     </div>
   );

@@ -173,7 +173,7 @@ const SimulationResults = ({ finalCount = 0, finalAreaM2 = 0, powerKW = 0, layer
 
     const annualIrrad = irradiationLayer.properties.ANNUAL || 0;
     const efficiencyFactor = 0.75; 
-    const dailyIrradKWh = annualIrrad / 1000;
+    const dailyIrradKWh = annualIrrad;
     
     // Geração de Energia
     const dailyGeneration = powerKW * dailyIrradKWh * efficiencyFactor;
@@ -203,19 +203,15 @@ const SimulationResults = ({ finalCount = 0, finalAreaM2 = 0, powerKW = 0, layer
                     <span className="result-value">{powerKW.toFixed(2)} <small>kWp</small></span>
                 </div>
                            <div className="result-item">
-                    <span className="result-label">Capacidade</span>
-                    <span className="result-value">{powerKW.toFixed(2)} <small>kWp</small></span>
+                    <span className="result-label">Área utilizada em m²</span>
+                    <span className="result-value">{safeArea} <small>m²</small></span>
                 </div>
                 <div className="result-item">
-                    <span className="result-label">Área utilizada</span>
+                    <span className="result-label">Área utilizada em Ha</span>
                     <span className="result-value">{areaInHa} <small>Ha</small></span>
                 </div>
                 
-                           <div className="result-item">
-                    <span className="result-label">Geração Mensal</span>
-                    <span className="result-value">{monthlyGeneration.toLocaleString('pt-BR', {maximumFractionDigits: 0})} <small>kWh</small></span>
-                </div>
-                
+           
                 
                 {/* Dados Financeiros (Destaque) */}
                 <div className="result-item highlight-money" style={{backgroundColor: '#f0fdf4', borderColor: '#bbf7d0'}}>

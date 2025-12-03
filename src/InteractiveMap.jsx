@@ -189,7 +189,15 @@ function InteractiveMap() {
         const shpResponse = await fetch('/Irrad.zip');
         const arrayBuffer = await shpResponse.arrayBuffer();
         const geojsonData = await shp(arrayBuffer);
-        
+        geojsonData.features.forEach(f => {
+            const p = f.properties;
+            const solarKeys = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC','ANNUAL'];
+            solarKeys.forEach(k => {
+                if (typeof p[k] === 'number') {
+                    p[k] = p[k] / 1000;
+                }
+            });
+        });
         const shpProps = geojsonData.features[0].properties;
         const baseExcluded = ['ID', 'LAT', 'LON'];
         const shpAttributes = Object.keys(shpProps)

@@ -176,7 +176,7 @@ const baseColor = typeof value === 'number' ? colorScale(value) : '#ccc';
           return null;
         })}
 
-        {choroplethIsVisible && <Legend colorScale={colorScale} valueRange={valueRange} />}
+        { /* choroplethIsVisible && <Legend colorScale={colorScale} valueRange={valueRange} /> */} 
       </MapContainer>
     </div>
   );

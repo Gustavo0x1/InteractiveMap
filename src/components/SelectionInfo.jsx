@@ -183,7 +183,7 @@ const SimulationResults = ({ finalCount = 0, finalAreaM2 = 0, powerKW = 0, layer
     // Cálculos Financeiros e Ambientais
     const monthlySavings = monthlyGeneration * tariff;
     const annualSavings = annualGeneration * tariff;
-    const co2Avoided = (annualGeneration * 0.1) / 1000; // ~0.1 kg CO2/kWh -> convertido para Toneladas
+    const co2Avoided = (annualGeneration * 0.0289) / 1000; // ~0.1 kg CO2/kWh -> convertido para Toneladas
     const homesPowered = monthlyGeneration / 150; // Média 150kWh/mês por residência
 
     const safeCount = Number.isFinite(finalCount) ? finalCount : 0;
@@ -202,6 +202,10 @@ const SimulationResults = ({ finalCount = 0, finalAreaM2 = 0, powerKW = 0, layer
                     <span className="result-label">Capacidade</span>
                     <span className="result-value">{powerKW.toFixed(2)} <small>kWp</small></span>
                 </div>
+                <div className="result-item">
+                    <span className="result-label">Geração Mensal</span>
+                    <span className="result-value">{monthlyGeneration.toLocaleString('pt-BR', {maximumFractionDigits: 0})} <small>kWh</small></span>
+                </div>
                            <div className="result-item">
                     <span className="result-label">Área utilizada em m²</span>
                     <span className="result-value">{safeArea} <small>m²</small></span>
@@ -210,7 +214,10 @@ const SimulationResults = ({ finalCount = 0, finalAreaM2 = 0, powerKW = 0, layer
                     <span className="result-label">Área utilizada em Ha</span>
                     <span className="result-value">{areaInHa} <small>Ha</small></span>
                 </div>
-                
+                <div className="result-item">
+    <span className="result-label">CO₂ Evitado</span>
+    <span className="result-value">{co2Avoided.toFixed(1)} <small>ton/ano</small></span>
+</div>
            
                 
                 {/* Dados Financeiros (Destaque) */}

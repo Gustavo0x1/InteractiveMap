@@ -26,12 +26,19 @@ const createTooltipContent = (properties, selectedAttribute, layerType) => {
          // Se for muito grande ou decimal, formata. Se for ano (ex: 2024), deixa inteiro.
          value = Number.isInteger(value) ? value : value.toFixed(2);
       }
-      
-      content += `<span class="tooltip-key">${selectedAttribute}:</span><span class="tooltip-value">${value}</span>`;
+
+      console.log(properties)
+      if(selectedAttribute == "ANNUAL"){
+
+        content += `<span class="tooltip-key">Anual:</span><span class="tooltip-value">${value} (kWh/m²/dia)</span>`;
+      }else{
+
+        content += `<span class="tooltip-key">${selectedAttribute}:</span><span class="tooltip-value">${value} </span>`;
+      }
       dataFound = true;
     }
   } 
-  // Lógica para outras camadas (ex: Cooperativas)
+
   else {
     const ignoreProps = [
       'id', 'name', 'description', 'ID', 'LAT', 'LON', 
@@ -44,10 +51,11 @@ const createTooltipContent = (properties, selectedAttribute, layerType) => {
       if (!ignoreProps.includes(key) && Object.prototype.hasOwnProperty.call(properties, key)) {
         let value = properties[key];
         if (typeof value === 'number' && !Number.isInteger(value)) value = value.toFixed(2);
-        content += `<span class="tooltip-key">${key}:</span><span class="tooltip-value">${value}</span>`;
+        
         dataFound = true;
       }
     }
+    content += `<span class="tooltip-value">Clique para mais informações</span>`;
   }
 
   // Fallback (se não achou dados ou atributo selecionado)

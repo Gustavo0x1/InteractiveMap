@@ -2,24 +2,24 @@
   "layers": [
     {
       "id": "pecuaria-csv",
-      "name": "Pecuária",
+      "name": "Pecuária (Cabeças)",
       "path": "/data/dados_pecuaria.csv"
     },
       {
       "id": "Agricultura-curtoPrazo",
-      "name": "Agricultura (Curto Prazo)",
+      "name": "Agricultura (Toneladas)",
       "path": "/data/Agricultura_curtoPrazo.csv",
       "dataset": "curto_prazo"
     },
           {
       "id": "Agricultura-medioPrazo",
-      "name": "Agricultura (Medio Prazo)",
+      "name": "Agricultura (Toneladas)",
       "path": "/data/Agricultura_medioPrazo.csv",
       "dataset": "medio_prazo"
     },
           {
       "id": "Agricultura-longPrazo",
-      "name": "Agricultura (Longo Prazo)",
+      "name": "Agricultura (Toneladas)",
       "path": "/data/Agricultura_longoPrazo.csv",
       "dataset": "longo_prazo"
     },
